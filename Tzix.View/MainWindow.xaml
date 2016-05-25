@@ -5,8 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Tzix.View"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="Tzix"
+        WindowStyle="ToolWindow"
+        Width="240"
+        SizeToContent="Height">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <TextBox
+                x:Name="_searchBox"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                Height="25"
+                FontFamily="Myrica M,Consolas,Meiryo"
+                />
+        </Grid>
+        <Grid Grid.Row="1">
+            <ListBox
+                DataContext="{Binding FoundList}"
+                ItemsSource="{Binding Items}"
+                SelectedIndex="{Binding SelectedIndex}"
+                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                MaxHeight="300"
+                >
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
     </Grid>
 </Window>
