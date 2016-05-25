@@ -1,1 +1,13 @@
-
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Basis.Core (1.1.3)
+    Chessie (0.5.1)
+      FSharp.Core
+    FSharp.Core (4.0.0.1)
+GITHUB
+  remote: vain0/dyxi
+  specs:
+    FULLPROJECT (ca9719f533d5b17268116d946533a2f816bc6fbf)
+      Basis.Core
+      Chessie
