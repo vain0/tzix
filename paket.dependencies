@@ -1,4 +1,10 @@
 source https://www.nuget.org/api/v2
 
 group Main
+  nuget System.Data.SQLite
+  nuget System.Data.SQLite.Core
+  nuget System.Data.SQLite.EF6
+  nuget System.Data.SQLite.Linq
+  nuget EntityFramework
+  nuget SQLite.CodeFirst
   github vain0/dyxi:v0.2
