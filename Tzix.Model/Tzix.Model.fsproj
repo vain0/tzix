@@ -44,9 +44,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="NaiveTrie.fs" />
+    <Compile Include="MultiMap.fs" />
+    <Compile Include="Util.fs" />
     <Compile Include="Types.fs" />
     <Compile Include="FileNode.fs" />
     <Compile Include="Dict.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
+      <Name>Dyxi.Util</Name>
+      <Project>{ca0c50ad-aaee-4b54-92f6-962e3e404b65}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

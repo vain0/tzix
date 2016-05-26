@@ -27,7 +27,6 @@
                 DataContext="{Binding FoundList}"
                 ItemsSource="{Binding Items}"
                 SelectedIndex="{Binding SelectedIndex}"
-                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                 MaxHeight="300"
                 >
                 <ListBox.ItemTemplate>

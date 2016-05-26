@@ -1,9 +1,11 @@
 ﻿namespace Tzix.Model
 
-module NaiveTrie =
+[<AutoOpen>]
+module NaiveTrieTypes =
   type NaiveTrie<'k, 'x when 'k: comparison> =
     | NaiveTrie of value: option<'x> * transferMap: Map<'k, NaiveTrie<'k, 'x>>
 
+module NaiveTrie =
   let singleton (x: 'x): NaiveTrie<'k, 'x> =
     NaiveTrie (Some x, Map.empty)
 

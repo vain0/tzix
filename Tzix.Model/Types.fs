@@ -4,14 +4,19 @@ open System
 
 [<AutoOpen>]
 module Types =
+  type Id = int
+
   type FileNode =
     {
+      Id                  : Id
+      ParentId            : option<Id>
       Name                : string
-      Children            : Map<string, FileNode>
-      mutable Priority    : int
+      Priority            : int
     }
 
   type Dict =
     {
-      Roots               : list<FileNode>
+      FileNodes           : Map<Id, FileNode>
+      Subfiles            : MultiMap<Id, Id>
+      Roots               : Set<Id>
     }

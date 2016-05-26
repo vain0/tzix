@@ -2,28 +2,27 @@
 
 open System
 open System.IO
+open Dyxi.Util
 
-module FileNode =
-  let ofFile (name: string) =
+module internal FileNode =
+  let create (name: string) parentIdOpt =
     {
+      Id              = createId ()
+      ParentId        = parentIdOpt
       Name            = name
-      Children        = Map.empty
       Priority        = 0
     }
 
-  let ofDirectory (name: string) (children: seq<FileNode>) =
-    {
-      Name            = name
-      Children        = children |> Seq.map (fun n -> (n.Name, n)) |> Map.ofSeq
-      Priority        = 0
-    }
-
-  let createFromDirectory: DirectoryInfo -> FileNode =
-    let rec walk (dir: DirectoryInfo) =
-      let files =
-        dir.GetFiles("*.*") |> Array.map (fun file -> file.Name |> ofFile)
-      let subdirs =
-        dir.GetDirectories() |> Array.map walk
-      in
-        ofDirectory dir.Name (Array.append subdirs files)
-    in walk
+  let enumFromDirectory: option<Id> -> DirectoryInfo -> list<FileNode> =
+    let rec walk acc parentId (dir: DirectoryInfo) =
+      let node        = create dir.Name parentId
+      let nodeId      = Some node.Id
+      let subfiles    = dir.GetFiles("*.*")
+      let subdirs     = dir.GetDirectories()
+      let acc         =
+        (subfiles |> Array.map (fun file -> create file.Name nodeId) |> Array.toList)
+        @ acc
+      in 
+        acc |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
+    in
+      walk []
