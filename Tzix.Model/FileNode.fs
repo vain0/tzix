@@ -4,8 +4,8 @@ open System
 open System.IO
 open Dyxi.Util
 
-module internal FileNode =
-  let create (name: string) parentIdOpt =
+module FileNode =
+  let internal create (name: string) parentIdOpt =
     {
       Id              = createId ()
       ParentId        = parentIdOpt
@@ -13,7 +13,7 @@ module internal FileNode =
       Priority        = 0
     }
 
-  let enumFromDirectory: option<Id> -> DirectoryInfo -> list<FileNode> =
+  let internal enumFromDirectory: option<Id> -> DirectoryInfo -> list<FileNode> =
     let rec walk acc parentId (dir: DirectoryInfo) =
       let node        = create dir.Name parentId
       let nodeId      = Some node.Id
@@ -23,6 +23,14 @@ module internal FileNode =
         (subfiles |> Array.map (fun file -> create file.Name nodeId) |> Array.toList)
         @ acc
       in 
-        acc |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
+        (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
     in
       walk []
+
+  let fullPath dict node =
+    let rec loop acc node =
+      let acc' = node.Name :: acc
+      match node.ParentId with
+      | Some parentId -> dict.FileNodes |> Map.find parentId |> loop acc'
+      | None          -> Path.Combine(acc' |> List.toArray)
+    in loop [] node

@@ -10,7 +10,7 @@ type FoundListViewModel() =
   let mutable _selectedIndex = -1
 
   let mutable _items =
-    ObservableCollection<FileNode>()
+    ObservableCollection<FileNodeViewModel>()
 
   member this.Items
     with get () = _items

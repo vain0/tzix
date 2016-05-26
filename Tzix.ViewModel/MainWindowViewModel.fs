@@ -18,7 +18,10 @@ type MainWindowViewModel() =
     let items =
       if _searchText |> Str.isNullOrWhiteSpace
       then Seq.empty
-      else _dict |> Dict.findInfix _searchText
+      else
+        _dict
+        |> Dict.findInfix _searchText
+        |> Seq.map (FileNodeViewModel.ofFileNode _dict)
     do _foundListViewModel.Items <- items |> Seq.toObservableCollection
 
   member this.SearchText

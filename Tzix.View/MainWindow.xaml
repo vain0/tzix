@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Tzix"
         WindowStyle="ToolWindow"
-        Width="240"
+        Width="640"
         SizeToContent="Height">
     <Grid>
         <Grid.RowDefinitions>
@@ -18,7 +18,7 @@
             <TextBox
                 x:Name="_searchBox"
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                Height="25"
+                Height="20"
                 FontFamily="Myrica M,Consolas,Meiryo"
                 />
         </Grid>
@@ -31,7 +31,7 @@
                 >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding FullName}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
