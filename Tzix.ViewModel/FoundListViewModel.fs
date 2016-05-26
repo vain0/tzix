@@ -12,6 +12,9 @@ type FoundListViewModel() =
   let mutable _items =
     ObservableCollection<FileNodeViewModel>()
 
+  let trySelectedItem () =
+    _items |> Seq.tryItem _selectedIndex
+
   member this.Items
     with get () = _items
     and  set v  = _items <- v; this.RaisePropertyChanged("Items")
@@ -24,4 +27,4 @@ type FoundListViewModel() =
         this.RaisePropertyChanged(name)
 
   member this.TrySelectedItem =
-    _items |> Seq.tryItem _selectedIndex
+    trySelectedItem ()

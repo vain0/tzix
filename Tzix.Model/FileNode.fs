@@ -27,6 +27,13 @@ module FileNode =
     in
       walk []
 
+  let internal enumParents dir =
+    let folder parent (dir: DirectoryInfo) =
+      create dir.Name (parent |> Option.map (fun node -> node.Id))
+      |> Some
+    in
+      dir |> DirectoryInfo.parents |> List.scan folder None
+
   let fullPath dict node =
     let rec loop acc node =
       let acc' = node.Name :: acc

@@ -22,7 +22,11 @@ module Dict =
     dict |> fold' nodes addNode
 
   let importDirectory dir dict =
-    dict |> addNodes (FileNode.enumFromDirectory None dir)
+    let parents       = FileNode.enumParents dir |> List.choose id
+    let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
+    let files         = FileNode.enumFromDirectory parentId dir
+    in
+      dict |> addNodes (parents @ files)
 
   let createForDebug () =
     let roots =
