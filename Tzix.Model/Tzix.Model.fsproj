@@ -49,6 +49,7 @@
     <Compile Include="MultiMap.fs" />
     <Compile Include="Util.fs" />
     <Compile Include="Types.fs" />
+    <Compile Include="ImportRule.fs" />
     <Compile Include="FileNode.fs" />
     <Compile Include="Dict.fs" />
   </ItemGroup>

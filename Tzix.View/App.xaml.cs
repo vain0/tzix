@@ -13,5 +13,15 @@ namespace Tzix.View
     /// </summary>
     public partial class App : Application
     {
+        public static void Abort(string message)
+        {
+            MessageBox.Show(
+                message,
+                ResourceAssembly.GetName().Name,
+                MessageBoxButton.OK,
+                MessageBoxImage.Error
+                );
+            Current.Shutdown();
+        }
     }
 }

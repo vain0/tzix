@@ -1,9 +1,17 @@
 ﻿namespace Tzix.Model
 
 open System
+open System.IO
+open System.Text.RegularExpressions
 
 [<AutoOpen>]
 module Types =
+  type ImportRule =
+    {
+      Roots               : list<DirectoryInfo>
+      Exclusions          : list<Regex>
+    }
+
   type FileNode =
     {
       Id                  : Id

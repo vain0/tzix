@@ -4,6 +4,7 @@ open System.Diagnostics
 open System.IO
 open System.Runtime.Serialization.Json
 open Basis.Core
+open Chessie.ErrorHandling
 open Dyxi.Util
 
 module Dict =
@@ -26,12 +27,17 @@ module Dict =
   let addNodes nodes dict =
     dict |> fold' nodes addNode
 
-  let importDirectory dir dict =
-    let parents       = dir |> FileNode.enumParents dict |> List.choose id
-    let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
-    let files         = dir |> FileNode.enumFromDirectory dict parentId
-    in
-      dict |> addNodes (parents @ files)
+  let importDirectory rule dir dict =
+    let parents       = dir |> FileNode.enumParents dict
+    if parents |> List.exists (fun dir -> rule |> ImportRule.excludes dir.Name) then
+      dict
+    else
+      let excludes (file: FileSystemInfo) =
+        rule |> ImportRule.excludes file.Name
+      let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
+      let files         = dir |> FileNode.enumFromDirectory dict excludes parentId
+      in
+        dict |> addNodes (parents @ files)
 
   let incrementPriority node dict =
     let node          = { node with Priority = node.Priority + 1 }
@@ -59,13 +65,20 @@ module Dict =
   let ofJson (json: string) =
     json |> Serialize.Json.deserialize<DictSpec> |> ofSpec
 
-  let createForDebug () =
-    let roots =
-      [
-        @"D:/repo/tzix"
-      ]
+  let import (file: FileInfo) =
+    let text        = File.ReadAllText(file.FullName)
+    let rule        = ImportRule.parse file.Name text
     in
-      empty |> fold' roots (fun path dict -> dict |> importDirectory (DirectoryInfo(path)))
+      empty |> fold' rule.Roots (importDirectory rule)
+
+  let tryLoad (dictFile: FileInfo) (importRuleFile: FileInfo) =
+    try
+      File.ReadAllText(dictFile.FullName) |> ofJson |> pass
+    with | e1 ->
+      try
+        import importRuleFile |> pass
+      with | e2 ->
+        Result.Bad [e1; e2]
 
   let findInfix word dict =
     dict.FileNodes |> Seq.choose (fun (KeyValue (_, node)) ->

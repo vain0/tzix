@@ -25,15 +25,23 @@ namespace Tzix.View
         {
             InitializeComponent();
 
-            DataContext = new MainWindowViewModel();
+            try
+            {
+                DataContext = new MainWindowViewModel();
+            }
+            catch (Exception e)
+            {
+                App.Abort(e.Message);
+            }
+
             _searchBox.Focus();
         }
-
+        
         private MainWindowViewModel ViewModel
         {
             get { return (MainWindowViewModel)DataContext; }
         }
-
+        
         private void _foundList_GotFocus(object sender, RoutedEventArgs e)
         {
             if (_foundList.SelectedIndex < 0 && !_foundList.Items.IsEmpty)
@@ -44,7 +52,10 @@ namespace Tzix.View
 
         private void _mainWindow_Closed(object sender, EventArgs e)
         {
-            ViewModel.Save();
+            if (ViewModel != null)
+            {
+                ViewModel.Save();
+            }
         }
     }
 }

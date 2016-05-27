@@ -3,22 +3,18 @@
 open System.IO
 open Tzix.Model
 open Basis.Core
+open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
 type MainWindowViewModel() as this =
   inherit ViewModel.Base()
-
+  
   let dictFile = FileInfo(@"tzix.json")
+  let importRuleFile = FileInfo(@".tzix_import_rules")
 
   let mutable _dict =
-    try
-      File.ReadAllText(dictFile.FullName) |> Dict.ofJson
-    with | _ ->
-#if DEBUG
-      Dict.createForDebug ()
-#else
-      Dict.empty
-#endif
+    Dict.tryLoad dictFile importRuleFile
+    |> Trial.returnOrFail
 
   let _foundListViewModel = FoundListViewModel()
 

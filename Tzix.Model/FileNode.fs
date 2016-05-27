@@ -13,17 +13,24 @@ module FileNode =
       Priority        = 0
     }
 
-  let internal enumFromDirectory (dict: Dict): option<Id> -> DirectoryInfo -> list<FileNode> =
+  let internal enumFromDirectory
+      (dict: Dict)
+      (excludes: FileSystemInfo -> bool)
+      : option<Id> -> DirectoryInfo -> list<FileNode>
+    =
     let rec walk acc parentId (dir: DirectoryInfo) =
-      let node        = create dict dir.Name parentId
-      let nodeId      = Some node.Id
-      let subfiles    = dir.GetFiles("*.*")
-      let subdirs     = dir.GetDirectories()
-      let acc         =
-        (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
-        @ acc
-      in 
-        (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
+      if excludes dir
+      then acc
+      else
+        let node        = create dict dir.Name parentId
+        let nodeId      = Some node.Id
+        let subfiles    = dir.GetFiles() |> Array.filter (excludes >> not)
+        let subdirs     = dir.GetDirectories()
+        let acc         =
+          (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
+          @ acc
+        in 
+          (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
     in
       walk []
 
@@ -32,7 +39,7 @@ module FileNode =
       create dict dir.Name (parent |> Option.map (fun node -> node.Id))
       |> Some
     in
-      dir |> DirectoryInfo.parents |> List.scan folder None
+      dir |> DirectoryInfo.parents |> List.scan folder None |> List.choose id
 
   let ancestors dict node =
     let rec loop acc node =
