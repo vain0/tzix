@@ -18,5 +18,4 @@ module Types =
     {
       FileNodes           : Map<Id, FileNode>
       Subfiles            : MultiMap<Id, Id>
-      Roots               : Set<Id>
     }

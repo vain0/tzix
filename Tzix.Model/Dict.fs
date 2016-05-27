@@ -9,7 +9,6 @@ module Dict =
     {
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
-      Roots               = Set.empty
     }
 
   let findNode nodeId (dict: Dict) =
