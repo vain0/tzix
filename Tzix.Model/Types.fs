@@ -19,3 +19,8 @@ module Types =
       FileNodes           : Map<Id, FileNode>
       Subfiles            : MultiMap<Id, Id>
     }
+
+  type DictSpec =
+    {
+      Nodes               : array<FileNode>
+    }

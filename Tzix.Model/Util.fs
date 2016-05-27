@@ -1,6 +1,5 @@
 ﻿namespace Tzix.Model
 
-open System.IO
 open Dyxi.Util
 
 [<AutoOpen>]
@@ -22,9 +21,28 @@ module List =
     else List.take h xs @ infix @ List.skip (len - t) xs
 
 module DirectoryInfo =
+  open System.IO
+
   let parents: DirectoryInfo -> list<DirectoryInfo> =
     let rec loop acc (dir: DirectoryInfo) =
       if dir.Parent = null
       then acc
       else loop (dir.Parent :: acc) dir.Parent
     in loop []
+
+module Serialize =
+  open System.IO
+  open System.Runtime.Serialization.Json
+  open System.Text
+  
+  module Json =
+    let serialize<'x> (x: 'x) = 
+      let jsonSerializer = new DataContractJsonSerializer(typedefof<'x>)
+      use stream = new MemoryStream()
+      jsonSerializer.WriteObject(stream, x)
+      UTF8Encoding.UTF8.GetString(stream.ToArray())
+
+    let deserialize<'x> (json : string) =
+      let jsonSerializer = new DataContractJsonSerializer(typedefof<'x>)
+      use stream = new MemoryStream(UTF8Encoding.UTF8.GetBytes(json))
+      jsonSerializer.ReadObject(stream) :?> 'x

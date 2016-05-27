@@ -2,6 +2,7 @@
 
 open System.Diagnostics
 open System.IO
+open System.Runtime.Serialization.Json
 open Basis.Core
 open Dyxi.Util
 
@@ -40,6 +41,20 @@ module Dict =
     let path          = node |> FileNode.fullPath dict
     Process.Start(path) |> ignore
     dict |> incrementPriority node
+
+  let toSpec (dict: Dict) =
+    {
+      Nodes           = dict.FileNodes |> Map.values |> Seq.toArray
+    }
+
+  let ofSpec (spec: DictSpec) =
+    empty |> addNodes spec.Nodes
+
+  let toJson dict =
+    dict |> toSpec |> Serialize.Json.serialize<DictSpec>
+
+  let ofJson (json: string) =
+    json |> Serialize.Json.deserialize<DictSpec> |> ofSpec
 
   let createForDebug () =
     let roots =

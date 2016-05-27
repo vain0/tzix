@@ -96,6 +96,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
+      <Project>{ca0c50ad-aaee-4b54-92f6-962e3e404b65}</Project>
+      <Name>Dyxi.Util</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Tzix.Model\Tzix.Model.fsproj">
       <Project>{f1573eb7-c646-4a9a-9a9c-25362727d2c8}</Project>
       <Name>Tzix.Model</Name>

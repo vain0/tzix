@@ -9,7 +9,9 @@
         Title="Tzix"
         WindowStyle="ToolWindow"
         Width="320"
-        SizeToContent="Height">
+        SizeToContent="Height"
+        Closed="_mainWindow_Closed"
+        >
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto" />

@@ -1,5 +1,6 @@
 ﻿namespace Tzix.ViewModel
 
+open System.IO
 open Tzix.Model
 open Basis.Core
 open Dyxi.Util.Wpf
@@ -7,8 +8,17 @@ open Dyxi.Util.Wpf
 type MainWindowViewModel() as this =
   inherit ViewModel.Base()
 
+  let dictFile = FileInfo(@"tzix.json")
+
   let mutable _dict =
-    Dict.createForDebug ()
+    try
+      File.ReadAllText(dictFile.FullName) |> Dict.ofJson
+    with | _ ->
+#if DEBUG
+      Dict.createForDebug ()
+#else
+      Dict.empty
+#endif
 
   let _foundListViewModel = FoundListViewModel()
 
@@ -46,3 +56,9 @@ type MainWindowViewModel() as this =
   member this.FoundList = _foundListViewModel
 
   member this.CommitCommand = _commitCommand
+
+  member this.Save() =
+    try
+      File.WriteAllText(dictFile.FullName, _dict |> Dict.toJson)
+    with | _ ->
+      ()

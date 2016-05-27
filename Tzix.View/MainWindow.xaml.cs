@@ -29,12 +29,22 @@ namespace Tzix.View
             _searchBox.Focus();
         }
 
+        private MainWindowViewModel ViewModel
+        {
+            get { return (MainWindowViewModel)DataContext; }
+        }
+
         private void _foundList_GotFocus(object sender, RoutedEventArgs e)
         {
             if (_foundList.SelectedIndex < 0 && !_foundList.Items.IsEmpty)
             {
                 _foundList.SelectedIndex = 0;
             }
+        }
+
+        private void _mainWindow_Closed(object sender, EventArgs e)
+        {
+            ViewModel.Save();
         }
     }
 }
