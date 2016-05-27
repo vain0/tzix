@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Tzix.View"
         mc:Ignorable="d"
+        x:Name="_mainWindow"
         Title="Tzix"
         WindowStyle="ToolWindow"
         Width="640"
@@ -20,20 +21,29 @@
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                 Height="20"
                 FontFamily="Myrica M,Consolas,Meiryo"
-                />
+                >
+                <TextBox.InputBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
         </Grid>
         <Grid Grid.Row="1">
             <ListBox
+                x:Name="_foundList"
                 DataContext="{Binding FoundList}"
                 ItemsSource="{Binding Items}"
                 SelectedIndex="{Binding SelectedIndex}"
                 MaxHeight="300"
+                FocusManager.GotFocus="_foundList_GotFocus"
                 >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding FullName}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
+                <ListBox.InputBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding DataContext.CommitCommand, ElementName=_mainWindow}" />
+                </ListBox.InputBindings>
             </ListBox>
         </Grid>
     </Grid>

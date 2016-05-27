@@ -1,10 +1,11 @@
 ﻿namespace Tzix.ViewModel
 
+open System.Diagnostics
 open Tzix.Model
 open Basis.Core
 open Dyxi.Util.Wpf
 
-type MainWindowViewModel() =
+type MainWindowViewModel() as this =
   inherit ViewModel.Base()
 
   let _dict =
@@ -24,11 +25,24 @@ type MainWindowViewModel() =
         |> Seq.map (FileNodeViewModel.ofFileNode _dict)
     do _foundListViewModel.Items <- items |> Seq.toObservableCollection
 
+  let _setSearchText v =
+    _searchText <- v
+    this.RaisePropertyChanged("SearchText")
+    searchIncrementally ()
+
+  let _commitCommand =
+    Command.create (fun _ -> true) (fun _ ->
+      _foundListViewModel.SelectFirstIfNoSelection()
+      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
+        Process.Start(item.FullName) |> ignore
+        _setSearchText ""
+        ))
+    |> fst
+
   member this.SearchText
     with get () = _searchText
-    and  set v  =
-      _searchText <- v
-      this.RaisePropertyChanged("SearchText")
-      searchIncrementally ()
+    and  set v  = _setSearchText v
 
   member this.FoundList = _foundListViewModel
+
+  member this.CommitCommand = _commitCommand

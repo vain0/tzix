@@ -28,5 +28,13 @@ namespace Tzix.View
             DataContext = new MainWindowViewModel();
             _searchBox.Focus();
         }
+
+        private void _foundList_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (_foundList.SelectedIndex < 0 && !_foundList.Items.IsEmpty)
+            {
+                _foundList.SelectedIndex = 0;
+            }
+        }
     }
 }

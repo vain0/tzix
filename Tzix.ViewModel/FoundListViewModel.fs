@@ -26,5 +26,9 @@ type FoundListViewModel() =
       for name in ["SelectedIndex"; "SelectedItem"] do
         this.RaisePropertyChanged(name)
 
-  member this.TrySelectedItem =
+  member this.TrySelectedItem() =
     trySelectedItem ()
+
+  member this.SelectFirstIfNoSelection() =
+    if this.SelectedIndex < 0 && _items.Count > 0 then
+      this.SelectedIndex <- 0
