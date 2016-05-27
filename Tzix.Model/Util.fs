@@ -4,12 +4,14 @@ open Dyxi.Util
 
 [<AutoOpen>]
 module Misc =
-  type Counter = unit -> int
+  type Id = int64
 
-  let createCounter (n: int): Counter =
+  type Counter = unit -> Id
+
+  let createCounter (n: Id): Counter =
     let r = ref n
     fun () ->
-      (! r) |> tap (fun k -> r := (k + 1))
+      (! r) |> tap (fun k -> r := (k + 1L))
 
 module List =
   /// Take `h` elements from head and `t` elements from tail

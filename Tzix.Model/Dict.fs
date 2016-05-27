@@ -9,7 +9,7 @@ open Dyxi.Util
 module Dict =
   let empty =
     {
-      Counter             = createCounter 0
+      Counter             = createCounter 0L
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
     }

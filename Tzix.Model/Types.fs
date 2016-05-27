@@ -4,8 +4,6 @@ open System
 
 [<AutoOpen>]
 module Types =
-  type Id = int
-
   type FileNode =
     {
       Id                  : Id
