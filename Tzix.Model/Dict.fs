@@ -9,6 +9,7 @@ open Dyxi.Util
 module Dict =
   let empty =
     {
+      Counter             = createCounter 0
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
     }
@@ -26,9 +27,9 @@ module Dict =
     dict |> fold' nodes addNode
 
   let importDirectory dir dict =
-    let parents       = FileNode.enumParents dir |> List.choose id
+    let parents       = dir |> FileNode.enumParents dict |> List.choose id
     let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
-    let files         = FileNode.enumFromDirectory parentId dir
+    let files         = dir |> FileNode.enumFromDirectory dict parentId
     in
       dict |> addNodes (parents @ files)
 
@@ -44,11 +45,13 @@ module Dict =
 
   let toSpec (dict: Dict) =
     {
+      NextId          = dict.Counter ()
       Nodes           = dict.FileNodes |> Map.values |> Seq.toArray
     }
 
   let ofSpec (spec: DictSpec) =
-    empty |> addNodes spec.Nodes
+    let dict = empty |> addNodes spec.Nodes
+    in { dict with Counter = createCounter spec.NextId }
 
   let toJson dict =
     dict |> toSpec |> Serialize.Json.serialize<DictSpec>

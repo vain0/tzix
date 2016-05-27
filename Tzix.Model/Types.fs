@@ -16,11 +16,13 @@ module Types =
 
   type Dict =
     {
+      Counter             : Counter
       FileNodes           : Map<Id, FileNode>
       Subfiles            : MultiMap<Id, Id>
     }
 
   type DictSpec =
     {
+      NextId              : Id
       Nodes               : array<FileNode>
     }

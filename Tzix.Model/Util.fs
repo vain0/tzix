@@ -4,8 +4,10 @@ open Dyxi.Util
 
 [<AutoOpen>]
 module Misc =
-  let createId: unit -> int =
-    let r = ref 0
+  type Counter = unit -> int
+
+  let createCounter (n: int): Counter =
+    let r = ref n
     fun () ->
       (! r) |> tap (fun k -> r := (k + 1))
 
