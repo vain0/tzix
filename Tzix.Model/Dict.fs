@@ -12,6 +12,9 @@ module Dict =
       Roots               = Set.empty
     }
 
+  let findNode nodeId (dict: Dict) =
+    dict.FileNodes |> Map.find nodeId
+
   let addNode node dict =
     let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node }
     match node.ParentId with

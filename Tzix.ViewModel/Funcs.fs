@@ -6,5 +6,5 @@ module FileNodeViewModel =
   let ofFileNode dict node =
     {
       FileNodeId            = node.Id
-      FullName              = node |> FileNode.fullPath dict
+      ShortName             = node |> FileNode.shortName dict
     }

@@ -34,7 +34,9 @@ type MainWindowViewModel() as this =
     Command.create (fun _ -> true) (fun _ ->
       _foundListViewModel.SelectFirstIfNoSelection()
       _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        Process.Start(item.FullName) |> ignore
+        let node      = _dict |> Dict.findNode item.FileNodeId
+        let path      = node |> FileNode.fullPath _dict
+        Process.Start(path) |> ignore
         _setSearchText ""
         ))
     |> fst

@@ -34,10 +34,24 @@ module FileNode =
     in
       dir |> DirectoryInfo.parents |> List.scan folder None
 
-  let fullPath dict node =
+  let ancestors dict node =
     let rec loop acc node =
-      let acc' = node.Name :: acc
+      let acc' = node :: acc
       match node.ParentId with
       | Some parentId -> dict.FileNodes |> Map.find parentId |> loop acc'
-      | None          -> Path.Combine(acc' |> List.toArray)
+      | None          -> acc'
     in loop [] node
+
+  let fullPath dict node =
+    let names =
+      ancestors dict node |> List.map (fun node -> node.Name)
+    in
+      Path.Combine(names |> List.toArray)
+
+  let shortName dict node =
+    let names =
+      ancestors dict node
+      |> List.map (fun node -> node.Name)
+      |> List.takeEnds ["..."] 2 2
+    in
+      Path.Combine(names |> List.toArray)
