@@ -1,6 +1,5 @@
 ﻿namespace Tzix.ViewModel
 
-open System.Diagnostics
 open Tzix.Model
 open Basis.Core
 open Dyxi.Util.Wpf
@@ -8,7 +7,7 @@ open Dyxi.Util.Wpf
 type MainWindowViewModel() as this =
   inherit ViewModel.Base()
 
-  let _dict =
+  let mutable _dict =
     Dict.createForDebug ()
 
   let _foundListViewModel = FoundListViewModel()
@@ -35,8 +34,7 @@ type MainWindowViewModel() as this =
       _foundListViewModel.SelectFirstIfNoSelection()
       _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
         let node      = _dict |> Dict.findNode item.FileNodeId
-        let path      = node |> FileNode.fullPath _dict
-        Process.Start(path) |> ignore
+        _dict <- _dict |> Dict.execute node
         _setSearchText ""
         ))
     |> fst

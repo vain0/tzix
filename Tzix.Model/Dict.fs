@@ -1,5 +1,6 @@
 ﻿namespace Tzix.Model
 
+open System.Diagnostics
 open System.IO
 open Basis.Core
 open Dyxi.Util
@@ -29,6 +30,16 @@ module Dict =
     let files         = FileNode.enumFromDirectory parentId dir
     in
       dict |> addNodes (parents @ files)
+
+  let incrementPriority node dict =
+    let node          = { node with Priority = node.Priority + 1 }
+    let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node }
+    in dict
+
+  let execute node dict =
+    let path          = node |> FileNode.fullPath dict
+    Process.Start(path) |> ignore
+    dict |> incrementPriority node
 
   let createForDebug () =
     let roots =
