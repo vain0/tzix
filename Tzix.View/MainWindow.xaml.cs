@@ -43,8 +43,8 @@ namespace Tzix.View
         {
             switch (e.PropertyName)
             {
-                case "SelectedIndex":
-                    var page = PageFromIndex((Types.PageIndex)ViewModel.SelectedIndex);
+                case "PageIndex":
+                    var page = PageFromIndex(ViewModel.PageIndex);
                     if (page != null)
                     {
                         Navigate(page);

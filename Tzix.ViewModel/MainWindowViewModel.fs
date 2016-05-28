@@ -11,7 +11,7 @@ open Tzix.Model
 type MainWindowViewModel(dispatcher: Dispatcher) =
   inherit ViewModel.Base()
 
-  let mutable _selectedIndex = -1
+  let mutable _pageIndex = PageIndex.MessageView
 
   let dictFile = FileInfo(@"tzix.json")
   let importRuleFile = FileInfo(@".tzix_import_rules")
@@ -19,16 +19,16 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
 
-  member this.SelectedIndex
-    with get () = _selectedIndex
+  member this.PageIndex
+    with get () = _pageIndex
     and  set i  =
-      _selectedIndex <- i
-      dispatcher.Invoke(fun () -> this.RaisePropertyChanged("SelectedIndex"))
+      _pageIndex <- i
+      dispatcher.Invoke(fun () -> this.RaisePropertyChanged("PageIndex"))
 
   member private this.ShowMessage(msg, isInProgress) =
     _messageView.Text <- msg
     _messageView.IsInProgress <- isInProgress
-    this.SelectedIndex <- PageIndex.MessageView |> int
+    this.PageIndex <- PageIndex.MessageView
 
   member this.TransStateTo(state) =
     match state with
@@ -45,7 +45,7 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
     | AppState.Running ->
         match _searchControlOpt with
         | None   -> this.TransStateTo(AppState.Loading)
-        | Some _ -> this.SelectedIndex <- PageIndex.SearchControl |> int
+        | Some _ -> this.PageIndex <- PageIndex.SearchControl
 
   member this.LoadDictAsync() =
     async {
