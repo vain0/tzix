@@ -28,7 +28,7 @@ module FileInfo =
   open System.IO
 
   let readTextAsync (file: FileInfo) =
-    use stream = file.OpenText()
+    let stream = file.OpenText()
     stream.ReadToEndAsync() |> Async.AwaitTask
 
 module DirectoryInfo =
