@@ -47,8 +47,13 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
       _foundListViewModel.SelectFirstIfNoSelection()
       _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
         let node      = _dict |> Dict.findNode item.FileNodeId
-        _dict <- _dict |> Dict.execute node
-        _setSearchText ""
+        match _dict |> Dict.tryExecute node with
+        | Ok (dict, _) ->
+            _dict <- dict
+            _setSearchText ""
+        | Bad es ->
+            _foundListViewModel.Items.Remove(item) |> ignore
+            _dict <- _dict |> Dict.removeNode node.Id
         ))
     |> fst
 

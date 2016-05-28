@@ -32,6 +32,9 @@ module Dict =
   let addNodes nodes dict =
     dict |> fold' nodes addNode
 
+  let removeNode nodeId dict =
+    { dict with FileNodes = dict.FileNodes |> Map.remove nodeId }
+
   let importDirectory rule dir dict =
     match dir |> FileNode.enumParents rule dict with
     | None -> dict
@@ -51,10 +54,13 @@ module Dict =
     let dict          = { dict with PriorityIndex = priorityIndex }
     in dict
 
-  let execute node dict =
+  let tryExecute node dict =
     let path          = node |> FileNode.fullPath dict
-    Process.Start(path) |> ignore
-    dict |> incrementPriority node
+    try
+      Process.Start(path) |> ignore
+      dict |> incrementPriority node |> pass
+    with
+    | e -> fail e
 
   let toSpec (dict: Dict) =
     {
