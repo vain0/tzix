@@ -50,7 +50,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="Funcs.fs" />
     <Compile Include="FoundListViewModel.fs" />
-    <Compile Include="MainWindowViewModel.fs" />
+    <Compile Include="SearchControlViewModel.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">

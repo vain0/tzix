@@ -12,7 +12,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Tzix.ViewModel;
 
 namespace Tzix.View
 {
@@ -24,31 +23,6 @@ namespace Tzix.View
         public MainWindow()
         {
             InitializeComponent();
-
-            DataContext = new MainWindowViewModel(Dispatcher);
-
-            _searchBox.Focus();
-        }
-        
-        private MainWindowViewModel ViewModel
-        {
-            get { return (MainWindowViewModel)DataContext; }
-        }
-        
-        private void _foundList_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (_foundList.SelectedIndex < 0 && !_foundList.Items.IsEmpty)
-            {
-                _foundList.SelectedIndex = 0;
-            }
-        }
-
-        private void _mainWindow_Closed(object sender, EventArgs e)
-        {
-            if (ViewModel != null)
-            {
-                ViewModel.Save();
-            }
         }
     }
 }

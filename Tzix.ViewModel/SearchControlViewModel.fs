@@ -9,7 +9,7 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-type MainWindowViewModel(dispatcher: Dispatcher) as this =
+type SearchControlViewModel(dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
 
   let dictFile = FileInfo(@"tzix.json")
