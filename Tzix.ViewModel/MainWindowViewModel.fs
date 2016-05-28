@@ -1,12 +1,14 @@
 ﻿namespace Tzix.ViewModel
 
+open System.Collections.ObjectModel
 open System.IO
+open System.Windows.Threading
 open Tzix.Model
 open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-type MainWindowViewModel() as this =
+type MainWindowViewModel(dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
   
   let dictFile = FileInfo(@"tzix.json")
@@ -21,14 +23,24 @@ type MainWindowViewModel() as this =
   let mutable _searchText = ""
 
   let searchIncrementally () =
-    let items =
-      if _searchText |> Str.isNullOrWhiteSpace
-      then Seq.empty
-      else
-        _dict
-        |> Dict.findInfix _searchText
-        |> Seq.map (FileNodeViewModel.ofFileNode _dict)
-    do _foundListViewModel.Items <- items |> Seq.toObservableCollection
+    async {
+      dispatcher.Invoke(fun () ->
+        _foundListViewModel.Items <- ObservableCollection()
+        )
+      let itemListList =
+        if _searchText |> Str.isNullOrWhiteSpace
+        then Seq.singleton Seq.empty
+        else _dict |> Dict.findInfix _searchText
+      for items in itemListList do
+        let items =
+          items
+          |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+          |> Seq.toObservableCollection
+        dispatcher.Invoke(fun () ->
+          _foundListViewModel.Items |> ObservableCollection.addRange items
+          )
+    }
+    |> Async.Start
 
   let _setSearchText v =
     _searchText <- v

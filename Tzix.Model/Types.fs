@@ -6,6 +6,8 @@ open System.Text.RegularExpressions
 
 [<AutoOpen>]
 module Types =
+  type Priority = int
+
   type ImportRule =
     {
       Roots               : list<DirectoryInfo>
@@ -17,7 +19,7 @@ module Types =
       Id                  : Id
       ParentId            : option<Id>
       Name                : string
-      Priority            : int
+      Priority            : Priority
     }
 
   type Dict =
@@ -25,6 +27,7 @@ module Types =
       Counter             : Counter
       FileNodes           : Map<Id, FileNode>
       Subfiles            : MultiMap<Id, Id>
+      PriorityIndex       : MultiMap<Priority, Id>
     }
 
   type DictSpec =

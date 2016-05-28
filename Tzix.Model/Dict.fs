@@ -13,6 +13,7 @@ module Dict =
       Counter             = createCounter 0L
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
+      PriorityIndex       = MultiMap.empty
     }
 
   let findNode nodeId (dict: Dict) =
@@ -20,9 +21,13 @@ module Dict =
 
   let addNode node dict =
     let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node }
-    match node.ParentId with
-    | Some parentId -> { dict with Subfiles = dict.Subfiles |> MultiMap.add parentId node.Id }
-    | None          -> dict
+    let dict =
+      match node.ParentId with
+      | Some parentId -> { dict with Subfiles = dict.Subfiles |> MultiMap.add parentId node.Id }
+      | None          -> dict
+    let dict =
+      { dict with PriorityIndex = dict.PriorityIndex |> MultiMap.add node.Priority node.Id }
+    in dict
 
   let addNodes nodes dict =
     dict |> fold' nodes addNode
@@ -40,8 +45,13 @@ module Dict =
         dict |> addNodes (parents @ files)
 
   let incrementPriority node dict =
-    let node          = { node with Priority = node.Priority + 1 }
-    let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node }
+    let node'         = { node with Priority = node.Priority + 1 }
+    let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node' }
+    let priorityIndex =
+      dict.PriorityIndex
+      |> MultiMap.removeOne node.Priority node.Id
+      |> MultiMap.add node'.Priority node.Id
+    let dict          = { dict with PriorityIndex = priorityIndex }
     in dict
 
   let execute node dict =
@@ -81,8 +91,17 @@ module Dict =
         Result.Bad [e1; e2]
 
   let findInfix word dict =
-    dict.FileNodes |> Seq.choose (fun (KeyValue (_, node)) ->
-      if node.Name |> Str.contains word
-      then Some node
-      else None
-      )
+    let find nodeIds =
+      nodeIds |> Seq.choose (fun nodeId ->
+        let node = dict |> findNode nodeId
+        if node.Name |> Str.contains word
+        then Some node
+        else None
+        )
+    in
+      dict.PriorityIndex
+      |> MultiMap.toMap
+      |> Seq.rev
+      |> Seq.map (fun (KeyValue (_, nodeIds)) ->
+          find nodeIds
+          )

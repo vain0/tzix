@@ -26,7 +26,7 @@ module MultiMap =
   let singleton (k: 'k) (v: 'v): MultiMap<'k, 'v> =
     empty |> add k v
 
-  let remove (k: 'k) (v: 'v) (MultiMap m): MultiMap<'k, 'v> =
+  let removeOne (k: 'k) (v: 'v) (MultiMap m): MultiMap<'k, 'v> =
     match m |> Map.tryFind k with
     | Some s ->
         let s' = s |> Set.remove v
@@ -67,3 +67,6 @@ module MultiMap =
 
   let toList self =
     self |> toSeq |> Seq.toList
+
+  let toMap (MultiMap m): Map<'k, Set<'v>> = m
+  let ofMap (m: Map<'k, Set<'v>>): MultiMap<'k, 'v> = MultiMap m

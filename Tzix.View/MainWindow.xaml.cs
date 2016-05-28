@@ -27,7 +27,7 @@ namespace Tzix.View
 
             try
             {
-                DataContext = new MainWindowViewModel();
+                DataContext = new MainWindowViewModel(Dispatcher);
             }
             catch (Exception e)
             {
