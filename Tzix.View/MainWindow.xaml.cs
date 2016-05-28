@@ -63,9 +63,10 @@ namespace Tzix.View
                         DataContext = ViewModel.MessageViewViewModel
                     };
                 case Types.PageIndex.SearchControl:
+                    var ctx = ViewModel.SearchControlViewModelOpt;
                     return new SearchControl()
                     {
-                        DataContext = ViewModel.SearchControlViewModelOpt
+                        DataContext = (ctx == null ? null : ctx.Value)
                     };
                 default:
                     return null;

@@ -77,4 +77,4 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
 
   member this.SearchControlViewModelOpt
     with get () = _searchControlOpt
-    and  set v  = _searchControlOpt <- v; this.RaisePropertyChanged("SearchControlViewModel")
+    and  set v  = _searchControlOpt <- v; this.RaisePropertyChanged("SearchControlViewModelOpt")

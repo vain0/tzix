@@ -41,7 +41,7 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
                 <ListBox.InputBindings>
-                    <KeyBinding Gesture="Enter" Command="{Binding DataContext.CommitCommand, ElementName=_searchaControl}" />
+                    <KeyBinding Gesture="Enter" Command="{Binding DataContext.CommitCommand, ElementName=_searchControl}" />
                 </ListBox.InputBindings>
             </ListBox>
         </Grid>
