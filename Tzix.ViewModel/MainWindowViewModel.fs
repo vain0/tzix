@@ -1,5 +1,6 @@
 ﻿namespace Tzix.ViewModel
 
+open System
 open System.Collections.ObjectModel
 open System.IO
 open System.Windows.Threading
@@ -10,13 +11,24 @@ open Dyxi.Util.Wpf
 
 type MainWindowViewModel(dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
-  
+
   let dictFile = FileInfo(@"tzix.json")
   let importRuleFile = FileInfo(@".tzix_import_rules")
 
-  let mutable _dict =
-    Dict.tryLoad dictFile importRuleFile
-    |> Trial.returnOrFail
+  let mutable _dict = Dict.empty
+
+  do // Load or create the dictionary
+    async {
+      let! result = Dict.tryLoadAsync dictFile importRuleFile
+      match result with
+      | Pass dict
+      | Warn (dict, _) ->
+          _dict <- dict
+      | Fail es ->
+          // TODO: report exceptions
+          ()
+    }
+    |> Async.Start
 
   let _foundListViewModel = FoundListViewModel()
 

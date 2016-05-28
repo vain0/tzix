@@ -24,6 +24,13 @@ module List =
     then xs
     else List.take h xs @ infix @ List.skip (len - t) xs
 
+module FileInfo =
+  open System.IO
+
+  let readTextAsync (file: FileInfo) =
+    use stream = file.OpenText()
+    stream.ReadToEndAsync() |> Async.AwaitTask
+
 module DirectoryInfo =
   open System.IO
 

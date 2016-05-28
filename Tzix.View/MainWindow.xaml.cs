@@ -25,14 +25,7 @@ namespace Tzix.View
         {
             InitializeComponent();
 
-            try
-            {
-                DataContext = new MainWindowViewModel(Dispatcher);
-            }
-            catch (Exception e)
-            {
-                App.Abort(e.Message);
-            }
+            DataContext = new MainWindowViewModel(Dispatcher);
 
             _searchBox.Focus();
         }

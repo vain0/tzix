@@ -72,20 +72,26 @@ module Dict =
   let ofJson (json: string) =
     json |> Serialize.Json.deserialize<DictSpec> |> ofSpec
 
-  let import (file: FileInfo) =
-    let text        = File.ReadAllText(file.FullName)
-    let rule        = ImportRule.parse file.Name text
-    in
-      empty |> fold' rule.Roots (importDirectory rule)
+  let importAsync (file: FileInfo) =
+    async {
+      let! text       = file |> FileInfo.readTextAsync
+      let rule        = ImportRule.parse file.Name text
+      return
+        empty |> fold' rule.Roots (importDirectory rule)
+    }
 
-  let tryLoad (dictFile: FileInfo) (importRuleFile: FileInfo) =
-    try
-      File.ReadAllText(dictFile.FullName) |> ofJson |> pass
-    with | e1 ->
+  let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
+    async {
       try
-        import importRuleFile |> pass
-      with | e2 ->
-        Result.Bad [e1; e2]
+        let! jsonText = dictFile |> FileInfo.readTextAsync
+        return jsonText |> ofJson |> pass
+      with | e1 ->
+        try
+          let! dict = importAsync importRuleFile
+          return dict |> pass
+        with | e2 ->
+          return Result.Bad [e1; e2]
+    }
 
   let findInfix word dict =
     let find nodeIds =
