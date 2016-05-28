@@ -33,12 +33,11 @@ module Dict =
     dict |> fold' nodes addNode
 
   let importDirectory rule dir dict =
-    let parents       = dir |> FileNode.enumParents dict
-    if parents |> List.exists (fun dir -> rule |> ImportRule.excludes dir.Name) then
-      dict
-    else
-      let excludes (file: FileSystemInfo) =
-        rule |> ImportRule.excludes file.Name
+    let excludes (file: FileSystemInfo) =
+      rule |> ImportRule.excludes file.Name
+    match dir |> FileNode.enumParents excludes dict with
+    | None -> dict
+    | Some parents ->
       let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
       let files         = dir |> FileNode.enumFromDirectory dict excludes parentId
       in

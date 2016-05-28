@@ -34,12 +34,19 @@ module FileNode =
     in
       walk []
 
-  let internal enumParents dict dir =
-    let folder parent (dir: DirectoryInfo) =
-      create dict dir.Name (parent |> Option.map (fun node -> node.Id))
-      |> Some
-    in
-      dir |> DirectoryInfo.parents |> List.scan folder None |> List.choose id
+  /// Enumerates all ancestor directories from the directory, excluding itself,
+  /// and converts them into FileNode instances.
+  /// Returns None if one of them is excluded.
+  let internal enumParents excludes dict dir =
+    let parents =
+      dir |> DirectoryInfo.parents
+    if parents |> List.exists excludes then
+      None
+    else
+      let folder parent (dir: DirectoryInfo) =
+        create dict dir.Name (parent |> Option.map (fun node -> node.Id))
+        |> Some
+      parents |> List.scan folder None |> List.choose id |> Some
 
   let ancestors dict node =
     let rec loop acc node =
