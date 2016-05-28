@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:Tzix.View"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
     </Application.Resources>
 </Application>

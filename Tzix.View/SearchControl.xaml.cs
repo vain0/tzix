@@ -24,16 +24,10 @@ namespace Tzix.View
         public SearchControl()
         {
             InitializeComponent();
+        }
 
-            var vm = new SearchControlViewModel(Dispatcher);
-            DataContext = vm;
-
-            // Register uninitialization
-            Dispatcher.ShutdownStarted += (sender, e) =>
-            {
-                vm.Save();
-            };
-
+        private void _searchControl_GotFocus(object sender, RoutedEventArgs e)
+        {
             _searchBox.Focus();
         }
 

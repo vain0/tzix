@@ -2,35 +2,18 @@
 
 open System
 open System.Collections.ObjectModel
-open System.IO
 open System.Windows.Threading
 open Tzix.Model
 open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-type SearchControlViewModel(dispatcher: Dispatcher) as this =
+type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
 
-  let dictFile = FileInfo(@"tzix.json")
-  let importRuleFile = FileInfo(@".tzix_import_rules")
-
-  let mutable _dict = Dict.empty
-
-  do // Load or create the dictionary
-    async {
-      let! result = Dict.tryLoadAsync dictFile importRuleFile
-      match result with
-      | Pass dict
-      | Warn (dict, _) ->
-          _dict <- dict
-      | Fail es ->
-          // TODO: report exceptions
-          ()
-    }
-    |> Async.Start
-
   let _foundListViewModel = FoundListViewModel()
+
+  let mutable _dict = dict
 
   let mutable _searchText = ""
 
@@ -77,8 +60,4 @@ type SearchControlViewModel(dispatcher: Dispatcher) as this =
 
   member this.CommitCommand = _commitCommand
 
-  member this.Save() =
-    try
-      File.WriteAllText(dictFile.FullName, _dict |> Dict.toJson)
-    with | _ ->
-      ()
+  member this.Dict = _dict

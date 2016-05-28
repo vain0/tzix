@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Tzix.ViewModel;
 
 namespace Tzix.View
 {
@@ -23,6 +24,22 @@ namespace Tzix.View
         public MainWindow()
         {
             InitializeComponent();
+
+            DataContext = new MainWindowViewModel(Dispatcher);
+            ViewModel.TransStateTo(Types.AppState.Loading);
+        }
+
+        private MainWindowViewModel ViewModel
+        {
+            get { return (MainWindowViewModel)DataContext; }
+        }
+        
+        private void _mainWindow_Closed(object sender, EventArgs e)
+        {
+            if (ViewModel != null)
+            {
+                ViewModel.Save();
+            }
         }
     }
 }
