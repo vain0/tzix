@@ -14,6 +14,7 @@ module Dict =
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
       PriorityIndex       = MultiMap.empty
+      ImportRule          = ImportRule.empty
     }
 
   let findNode nodeId (dict: Dict) =
@@ -35,12 +36,12 @@ module Dict =
   let removeNode nodeId dict =
     { dict with FileNodes = dict.FileNodes |> Map.remove nodeId }
 
-  let importDirectory rule dir dict =
-    match dir |> FileNode.enumParents rule dict with
+  let importDirectory dir dict =
+    match dir |> FileNode.enumParents dict with
     | None -> dict
     | Some parents ->
       let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
-      let files         = dir |> FileNode.enumFromDirectory dict rule parentId
+      let files         = dir |> FileNode.enumFromDirectory dict parentId
       in
         dict |> addNodes (parents @ files)
 
@@ -78,19 +79,28 @@ module Dict =
   let ofJson (json: string) =
     json |> Serialize.Json.deserialize<DictSpec> |> ofSpec
 
+  let loadImportRule file =
+    async {
+      let! text = file |> FileInfo.readTextAsync
+      return ImportRule.parse file.Name text
+    }
+
   let importAsync (file: FileInfo) =
     async {
-      let! text       = file |> FileInfo.readTextAsync
-      let rule        = ImportRule.parse file.Name text
+      let! rule = loadImportRule file
       return
-        empty |> fold' rule.Roots (importDirectory rule)
+        { empty with ImportRule = rule }
+        |> fold' rule.Roots importDirectory
     }
 
   let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
     async {
       try
+        let! rule     = loadImportRule importRuleFile
         let! jsonText = dictFile |> FileInfo.readTextAsync
-        return jsonText |> ofJson |> pass
+        let dict      = jsonText |> ofJson
+        let dict      = { dict with ImportRule = rule }
+        return dict |> pass
       with | e1 ->
         try
           let! dict = importAsync importRuleFile

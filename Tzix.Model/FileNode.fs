@@ -29,7 +29,6 @@ module FileNode =
 
   let internal enumFromDirectory
       (dict: Dict)
-      (rule: ImportRule)
       : option<Id> -> DirectoryInfo -> list<FileNode>
     =
     let rec walk acc parentId (dir: DirectoryInfo) =
@@ -37,10 +36,10 @@ module FileNode =
       let nodeId      = Some node.Id
       let subfiles    =
         dir |> DirectoryInfo.getAllFilesIfAble
-        |> Array.filter (excludes rule >> not)
+        |> Array.filter (excludes dict.ImportRule >> not)
       let subdirs     =
         dir |> DirectoryInfo.getAllDirectoriesIfAble
-        |> Array.filter (excludes rule >> not)
+        |> Array.filter (excludes dict.ImportRule >> not)
       let acc         =
         (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
         @ acc
@@ -52,10 +51,10 @@ module FileNode =
   /// Enumerates all ancestor directories from the directory, excluding itself,
   /// and converts them into FileNode instances.
   /// Returns None if one of them is excluded.
-  let internal enumParents rule dict dir =
+  let internal enumParents dict dir =
     let parents =
       dir |> DirectoryInfo.parents
-    if parents |> List.exists (excludes rule) then
+    if parents |> List.exists (excludes dict.ImportRule) then
       None
     else
       let folder parent (dir: DirectoryInfo) =

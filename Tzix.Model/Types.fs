@@ -28,6 +28,7 @@ module Types =
       FileNodes           : Map<Id, FileNode>
       Subfiles            : MultiMap<Id, Id>
       PriorityIndex       : MultiMap<Priority, Id>
+      ImportRule          : ImportRule
     }
 
   type DictSpec =
