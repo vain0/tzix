@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Windows
 open System.Windows.Threading
 open Basis.Core
 open Chessie.ErrorHandling
@@ -13,11 +14,19 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
 
   let mutable _selectedIndex = -1
 
+  let rectFile = FileInfo(@"tzix_window_rect.json")
   let dictFile = FileInfo(@"tzix.json")
   let importRuleFile = FileInfo(@".tzix_import_rules")
 
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
+
+  let _rect =
+    try
+      rectFile |> FileInfo.readTextAsync |> Async.RunSynchronously
+      |> Serialize.Json.deserialize<Rect>
+    with
+    | _ -> Rect(0.0, 0.0, 320.0, 0.0)
 
   member this.SelectedIndex
     with get () = _selectedIndex
@@ -41,7 +50,6 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
               this.LoadDictAsync() |> Async.Start
         | Some _ ->
             this.TransStateTo(AppState.Running)
-
     | AppState.Running ->
         match _searchControlOpt with
         | None   -> this.TransStateTo(AppState.Loading)
@@ -71,6 +79,10 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
       with | _ ->
         ()
       )
+    try
+      File.WriteAllText(rectFile.FullName, Serialize.Json.serialize this.Rect)
+    with
+    | _ -> ()
 
   member this.MessageViewViewModel =
     _messageView
@@ -78,3 +90,6 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
   member this.SearchControlViewModelOpt
     with get () = _searchControlOpt
     and  set v  = _searchControlOpt <- v; this.RaisePropertyChanged("SearchControlViewModelOpt")
+
+  /// Height is ignored
+  member this.Rect = _rect

@@ -11,6 +11,8 @@
     WindowStyle="ToolWindow"
     MinWidth="320"
     SizeToContent="WidthAndHeight"
+    Width="{Binding Rect.Width}"
+    Left="{Binding Rect.Left}" Top="{Binding Rect.Top}"
     Closed="_mainWindow_Closed"
     >
 </NavigationWindow>
