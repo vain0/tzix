@@ -4,9 +4,8 @@ open Tzix.Model
 
 [<AutoOpen>]
 module Types =
-  // The indexes of the pages of the tab control in the main window.
   [<RequireQualifiedAccess>]
-  type TabPageIndex =
+  type PageIndex =
     | MessageView              = 0
     | SearchControl            = 1
 

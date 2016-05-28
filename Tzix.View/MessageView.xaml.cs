@@ -18,7 +18,7 @@ namespace Tzix.View
     /// <summary>
     /// MessageView.xaml の相互作用ロジック
     /// </summary>
-    public partial class MessageView : UserControl
+    public partial class MessageView : Page
     {
         public MessageView()
         {

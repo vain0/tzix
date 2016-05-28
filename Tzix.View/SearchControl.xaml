@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<Page
     x:Name="_searchControl"
     x:Class="Tzix.View.SearchControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -8,7 +8,6 @@
     xmlns:local="clr-namespace:Tzix.View"
     mc:Ignorable="d" 
     d:DesignWidth="320" d:DesignHeight="150"
-    GotFocus="_searchControl_GotFocus"
     >
     <Grid>
         <Grid.RowDefinitions>
@@ -47,4 +46,4 @@
             </ListBox>
         </Grid>
     </Grid>
-</UserControl>
+</Page>

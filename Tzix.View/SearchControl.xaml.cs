@@ -19,15 +19,12 @@ namespace Tzix.View
     /// <summary>
     /// SearchControl.xaml の相互作用ロジック
     /// </summary>
-    public partial class SearchControl : UserControl
+    public partial class SearchControl : Page
     {
         public SearchControl()
         {
             InitializeComponent();
-        }
 
-        private void _searchControl_GotFocus(object sender, RoutedEventArgs e)
-        {
             _searchBox.Focus();
         }
 

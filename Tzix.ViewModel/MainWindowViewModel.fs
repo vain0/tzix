@@ -21,12 +21,14 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
 
   member this.SelectedIndex
     with get () = _selectedIndex
-    and  set i  = _selectedIndex <- i; this.RaisePropertyChanged("SelectedIndex")
+    and  set i  =
+      _selectedIndex <- i
+      dispatcher.Invoke(fun () -> this.RaisePropertyChanged("SelectedIndex"))
 
   member private this.ShowMessage(msg, isInProgress) =
     _messageView.Text <- msg
     _messageView.IsInProgress <- isInProgress
-    this.SelectedIndex <- TabPageIndex.MessageView |> int
+    this.SelectedIndex <- PageIndex.MessageView |> int
 
   member this.TransStateTo(state) =
     match state with
@@ -43,7 +45,7 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
     | AppState.Running ->
         match _searchControlOpt with
         | None   -> this.TransStateTo(AppState.Loading)
-        | Some _ -> this.SelectedIndex <- TabPageIndex.SearchControl |> int
+        | Some _ -> this.SelectedIndex <- PageIndex.SearchControl |> int
 
   member this.LoadDictAsync() =
     async {
@@ -52,7 +54,7 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
         match result with
         | Pass dict
         | Warn (dict, _) ->
-            this.SearchControlViewModel <- SearchControlViewModel(dict, dispatcher) |> Some
+            this.SearchControlViewModelOpt <- SearchControlViewModel(dict, dispatcher) |> Some
             AppState.Running
         | Fail es ->
             let msg =
@@ -73,6 +75,6 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
   member this.MessageViewViewModel =
     _messageView
 
-  member this.SearchControlViewModel
+  member this.SearchControlViewModelOpt
     with get () = _searchControlOpt
     and  set v  = _searchControlOpt <- v; this.RaisePropertyChanged("SearchControlViewModel")
