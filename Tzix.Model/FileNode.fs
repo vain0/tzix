@@ -13,34 +13,49 @@ module FileNode =
       Priority        = 0
     }
 
+  let excludes rule (file: FileSystemInfo) =
+    let excludesByRule () =
+      rule |> ImportRule.excludes file.Name
+    let forbiddenAttributes =
+      [
+        FileAttributes.Archive
+        FileAttributes.Temporary
+        FileAttributes.Offline
+      ]
+    let excludesByAttributes () =
+      forbiddenAttributes |> List.exists (fun a -> file.Attributes.HasFlag(a))
+    in
+      excludesByRule () || excludesByAttributes ()
+
   let internal enumFromDirectory
       (dict: Dict)
-      (excludes: FileSystemInfo -> bool)
+      (rule: ImportRule)
       : option<Id> -> DirectoryInfo -> list<FileNode>
     =
     let rec walk acc parentId (dir: DirectoryInfo) =
-      if excludes dir
-      then acc
-      else
-        let node        = create dict dir.Name parentId
-        let nodeId      = Some node.Id
-        let subfiles    = dir.GetFiles() |> Array.filter (excludes >> not)
-        let subdirs     = dir.GetDirectories()
-        let acc         =
-          (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
-          @ acc
-        in 
-          (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
+      let node        = create dict dir.Name parentId
+      let nodeId      = Some node.Id
+      let subfiles    =
+        dir |> DirectoryInfo.getAllFilesIfAble
+        |> Array.filter (excludes rule >> not)
+      let subdirs     =
+        dir |> DirectoryInfo.getAllDirectoriesIfAble
+        |> Array.filter (excludes rule >> not)
+      let acc         =
+        (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
+        @ acc
+      in 
+        (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
     in
       walk []
 
   /// Enumerates all ancestor directories from the directory, excluding itself,
   /// and converts them into FileNode instances.
   /// Returns None if one of them is excluded.
-  let internal enumParents excludes dict dir =
+  let internal enumParents rule dict dir =
     let parents =
       dir |> DirectoryInfo.parents
-    if parents |> List.exists excludes then
+    if parents |> List.exists (excludes rule) then
       None
     else
       let folder parent (dir: DirectoryInfo) =

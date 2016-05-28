@@ -34,6 +34,18 @@ module DirectoryInfo =
       else loop (dir.Parent :: acc) dir.Parent
     in loop []
 
+  let getAllFilesIfAble (dir: DirectoryInfo) =
+    try
+      dir.GetFiles()
+    with
+    | _ -> [||]
+
+  let getAllDirectoriesIfAble (dir: DirectoryInfo) =
+    try
+      dir.GetDirectories()
+    with
+    | _ -> [||]
+
 module Serialize =
   open System.IO
   open System.Runtime.Serialization.Json
