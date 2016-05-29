@@ -21,7 +21,6 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   let mutable _searchText = ""
 
   /// 検索結果を列挙する。
-  /// 非同期的に結果を伸ばしていくために列の列を返す。
   let find word dict =
     match _searchSource with
     | SearchSource.All ->
@@ -29,26 +28,24 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         then Seq.empty
         else
           dict |> Dict.findInfix word
-          |> Seq.map (Seq.map (FileNodeViewModel.ofFileNode dict))
+          |> Seq.collect id
+          |> Seq.map (FileNodeViewModel.ofFileNode dict)
     | SearchSource.Dir (_, items) ->
         items |> Seq.filter (fun item ->
           let node = dict |> Dict.findNode item.FileNodeId
           in node.Name |> Str.contains word
           )
-        |> Seq.singleton
 
   let searchAsync () =
     async {
       dispatcher.Invoke(fun () ->
-        _foundListViewModel.Items <- ObservableCollection()
+        _foundListViewModel.Items <- Seq.empty
         )
-      let itemListList =
+      let items =
         find _searchText _dict
-      for items in itemListList do
-        dispatcher.Invoke(fun () ->
-          _foundListViewModel.Items
-          |> ObservableCollection.addRange (items |> Seq.toObservableCollection)
-          )
+      dispatcher.Invoke(fun () ->
+        _foundListViewModel.Items <- items
+        )
     }
 
   let searchIncrementally prevSearchText =
@@ -58,9 +55,8 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
     if (_searchText |> Str.startsWith prevSearchText)
       && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
     then // If just appended some chars then reduce candidates.
-      _foundListViewModel.Items
-      |> ObservableCollection.removeIf
-          (fun item -> item.Name |> Str.contains _searchText |> not)
+      _foundListViewModel.Items <-
+        _foundListViewModel.Items |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
     else
       searchAsync () |> Async.Start
 
@@ -80,7 +76,6 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
             _dict <- dict
             _setSearchText ""
         | Bad es ->
-            _foundListViewModel.Items.Remove(item) |> ignore
             _dict <- _dict |> Dict.removeNode node.Id
         ))
     |> fst

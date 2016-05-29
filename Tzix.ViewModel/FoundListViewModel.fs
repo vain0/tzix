@@ -10,7 +10,7 @@ type FoundListViewModel() =
   let mutable _selectedIndex = -1
 
   let mutable _items =
-    ObservableCollection<FileNodeViewModel>()
+    (Seq.empty: seq<FileNodeViewModel>)
 
   let trySelectedItem () =
     _items |> Seq.tryItem _selectedIndex
@@ -30,5 +30,5 @@ type FoundListViewModel() =
     trySelectedItem ()
 
   member this.SelectFirstIfNoSelection() =
-    if this.SelectedIndex < 0 && _items.Count > 0 then
+    if this.SelectedIndex < 0 && (this.Items |> Seq.isEmpty |> not) then
       this.SelectedIndex <- 0
