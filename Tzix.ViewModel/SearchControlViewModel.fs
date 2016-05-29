@@ -8,11 +8,8 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-
 type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
-
-  let _foundListViewModel = FoundListViewModel()
 
   let mutable _dict = dict
 
@@ -20,12 +17,17 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let mutable _searchText = ""
 
+  let mutable _selectedIndex = -1
+
   let mutable _foundNodes =
     (Seq.empty: seq<FileNode>)
 
   let _setNodes nodes =
     _foundNodes <- nodes
-    _foundListViewModel.Items <- nodes |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+    this.RaisePropertyChanged("ItemChunks")
+
+  let trySelectedNode () =
+    _foundNodes |> Seq.tryItem _selectedIndex
 
   /// 検索結果を列挙する。
   let findNodes word =
@@ -65,9 +67,8 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let _commitCommand =
     Command.create (fun _ -> true) (fun _ ->
-      _foundListViewModel.SelectFirstIfNoSelection()
-      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        let node      = _dict |> Dict.findNode item.FileNodeId
+      this.SelectFirstIfNoSelection()
+      trySelectedNode () |> Option.iter (fun node ->
         match _dict |> Dict.tryExecute node with
         | Ok (dict, _) ->
             _dict <- dict
@@ -88,18 +89,17 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->
-      _foundListViewModel.SelectFirstIfNoSelection()
-      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        _selectDir item.FileNodeId
+      this.SelectFirstIfNoSelection()
+      trySelectedNode () |> Option.iter (fun node ->
+        _selectDir node.Id
         ))
     |> fst
 
   let _selectParentDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       option {
-        _foundListViewModel.SelectFirstIfNoSelection()
-        let! item       = _foundListViewModel.TrySelectedItem()
-        let node        = _dict |> Dict.findNode item.FileNodeId
+        this.SelectFirstIfNoSelection()
+        let! node       = trySelectedNode ()
         let! parentId   = node.ParentId
         return _selectDir parentId
       } |> Option.getOr ())
@@ -109,7 +109,26 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
     with get () = _searchText
     and  set v  = _setSearchText v
 
-  member this.FoundList = _foundListViewModel
+  member this.SelectedIndex
+    with get () = _selectedIndex
+    and  set v  =
+      _selectedIndex <- v
+      this.RaisePropertyChanged("SelectedIndex")
+
+  member this.SelectFirstIfNoSelection() =
+    if this.SelectedIndex < 0 && (_foundNodes |> Seq.isEmpty |> not) then
+      this.SelectedIndex <- 0
+
+  member this.ItemChunks
+    with get () =
+      _foundNodes
+      |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+      |> Seq.chunkBySize 100
+    and  set (itemChunks: seq<array<FileNodeViewModel>>) =
+      itemChunks |> Seq.collect id
+      |> Seq.map (fun item -> _dict |> Dict.findNode item.FileNodeId)
+      |> _setNodes
+      this.RaisePropertyChanged("ItemChunks")
 
   member this.CommitCommand = _commitCommand
   member this.SelectDirCommand = _selectDirCommand

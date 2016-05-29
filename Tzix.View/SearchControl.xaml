@@ -33,7 +33,6 @@
         <Grid Grid.Row="1">
             <util:LazyListBox
                 x:Name="_foundList"
-                DataContext="{Binding FoundList}"
                 LazyItemsSource="{Binding ItemChunks}"
                 SelectedIndex="{Binding SelectedIndex}"
                 MaxHeight="300"
@@ -44,15 +43,15 @@
                         <Grid>
                             <TextBlock Text="{Binding ShortName}" />
                             <Grid.InputBindings>
-                                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.CommitCommand, ElementName=_searchControl}" />
+                                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding CommitCommand}" />
                             </Grid.InputBindings>
                         </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
                 <ListBox.InputBindings>
-                    <KeyBinding Gesture="Enter" Command="{Binding DataContext.CommitCommand, ElementName=_searchControl}" />
-                    <KeyBinding Gesture="Ctrl+Right" Command="{Binding DataContext.SelectDirCommand, ElementName=_searchControl}" />
-                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding DataContext.SelectParentDirCommand, ElementName=_searchControl}" />
+                    <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                    <KeyBinding Gesture="Ctrl+Right" Command="{Binding SelectDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding SelectParentDirCommand}" />
                 </ListBox.InputBindings>
             </util:LazyListBox>
         </Grid>
