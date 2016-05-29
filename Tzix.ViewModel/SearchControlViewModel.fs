@@ -38,9 +38,6 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let searchAsync () =
     async {
-      dispatcher.Invoke(fun () ->
-        _foundListViewModel.Items <- Seq.empty
-        )
       let items =
         find _searchText _dict
       dispatcher.Invoke(fun () ->
