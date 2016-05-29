@@ -18,7 +18,6 @@ module FileNode =
       rule |> ImportRule.excludes file.Name
     let forbiddenAttributes =
       [
-        FileAttributes.Archive
         FileAttributes.Temporary
         FileAttributes.Offline
       ]
