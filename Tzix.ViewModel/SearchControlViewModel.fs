@@ -56,7 +56,8 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
       && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
     then // If just appended some chars then reduce candidates.
       _foundListViewModel.Items <-
-        _foundListViewModel.Items |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
+        _foundListViewModel.Items
+        |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
     else
       searchAsync () |> Async.Start
 
@@ -90,7 +91,7 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         )
     _setSearchText ""
     _searchSource <- SearchSource.Dir (nodeId, items)
-    _foundListViewModel.Items <- items |> Seq.toObservableCollection
+    _foundListViewModel.Items <- items
 
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->

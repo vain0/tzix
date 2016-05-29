@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
     xmlns:local="clr-namespace:Tzix.View"
+    xmlns:util="clr-namespace:Tzix.View.Utilities"
     mc:Ignorable="d" 
     d:DesignWidth="320" d:DesignHeight="150"
     >
@@ -30,10 +31,10 @@
             </TextBox>
         </Grid>
         <Grid Grid.Row="1">
-            <ListBox
+            <util:LazyListBox
                 x:Name="_foundList"
                 DataContext="{Binding FoundList}"
-                ItemsSource="{Binding Items}"
+                LazyItemsSource="{Binding ItemChunks}"
                 SelectedIndex="{Binding SelectedIndex}"
                 MaxHeight="300"
                 FocusManager.GotFocus="_foundList_GotFocus"
@@ -53,7 +54,7 @@
                     <KeyBinding Gesture="Ctrl+Right" Command="{Binding DataContext.SelectDirCommand, ElementName=_searchControl}" />
                     <KeyBinding Gesture="Ctrl+Left" Command="{Binding DataContext.SelectParentDirCommand, ElementName=_searchControl}" />
                 </ListBox.InputBindings>
-            </ListBox>
+            </util:LazyListBox>
         </Grid>
     </Grid>
 </Page>

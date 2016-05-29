@@ -15,9 +15,20 @@ type FoundListViewModel() =
   let trySelectedItem () =
     _items |> Seq.tryItem _selectedIndex
 
+  member this.ItemChunks
+    with get () =
+      this.Items |> Seq.chunkBySize 100
+    and  set (itemChunks: seq<array<FileNodeViewModel>>) =
+      this.Items <- itemChunks |> Seq.collect id
+      for name in ["Items"; "ItemChunks"] do
+        this.RaisePropertyChanged(name)
+
   member this.Items
     with get () = _items
-    and  set v  = _items <- v; this.RaisePropertyChanged("Items")
+    and  set v  =
+      _items <- v
+      for name in ["Items"; "ItemChunks"] do
+        this.RaisePropertyChanged(name)
 
   member this.SelectedIndex
     with get () = _selectedIndex
