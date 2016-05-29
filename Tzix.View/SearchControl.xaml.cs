@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +25,12 @@ namespace Tzix.View
         public SearchControl()
         {
             InitializeComponent();
+            
+            _searchBox.Focus();
+        }
 
+        private void _searchBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
             _searchBox.Focus();
         }
 

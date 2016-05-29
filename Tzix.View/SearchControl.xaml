@@ -20,6 +20,7 @@
                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                 Height="20"
                 FontFamily="Myrica M,Consolas,Meiryo"
+                TextChanged="_searchBox_TextChanged"
                 >
                 <TextBox.InputBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
