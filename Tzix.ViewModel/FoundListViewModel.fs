@@ -23,7 +23,7 @@ type FoundListViewModel() =
     with get () = _selectedIndex
     and  set v  =
       _selectedIndex <- v
-      for name in ["SelectedIndex"; "SelectedItem"] do
+      for name in ["SelectedIndex"; "TrySelectedItem"] do
         this.RaisePropertyChanged(name)
 
   member this.TrySelectedItem() =
