@@ -52,6 +52,7 @@
     <Compile Include="ImportRule.fs" />
     <Compile Include="FileNode.fs" />
     <Compile Include="Dict.fs" />
+    <Compile Include="Searcher.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">

@@ -8,7 +8,7 @@ open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 open Tzix.Model
 
-type MainWindowViewModel(dispatcher: Dispatcher) =
+type MainWindowViewModel(_dispatcher: Dispatcher) =
   inherit ViewModel.Base()
 
   let mutable _pageIndex = PageIndex.MessageView
@@ -23,7 +23,7 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
     with get () = _pageIndex
     and  set i  =
       _pageIndex <- i
-      dispatcher.Invoke(fun () -> this.RaisePropertyChanged("PageIndex"))
+      _dispatcher.Invoke(fun () -> this.RaisePropertyChanged("PageIndex"))
 
   member private this.ShowMessage(msg, isInProgress) =
     _messageView.Text <- msg
@@ -37,11 +37,10 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
     | AppState.Loading ->
         match _searchControlOpt with
         | None ->
-              this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
-              this.LoadDictAsync() |> Async.Start
+            this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
+            this.LoadDictAsync() |> Async.Start
         | Some _ ->
             this.TransStateTo(AppState.Running)
-
     | AppState.Running ->
         match _searchControlOpt with
         | None   -> this.TransStateTo(AppState.Loading)
@@ -54,7 +53,7 @@ type MainWindowViewModel(dispatcher: Dispatcher) =
         match result with
         | Pass dict
         | Warn (dict, _) ->
-            this.SearchControlViewModelOpt <- SearchControlViewModel(dict, dispatcher) |> Some
+            this.SearchControlViewModelOpt <- SearchControlViewModel(dict) |> Some
             AppState.Running
         | Fail es ->
             let msg =

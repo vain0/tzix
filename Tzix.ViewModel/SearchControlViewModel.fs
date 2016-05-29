@@ -8,119 +8,87 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-
-type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
+type SearchControlViewModel(_dict: Dict) as this =
   inherit ViewModel.Base()
 
-  let _foundListViewModel = FoundListViewModel()
-
-  let mutable _dict = dict
-
-  let mutable _searchSource = SearchSource.All
+  let _searcher = Searcher(_dict)
 
   let mutable _searchText = ""
 
-  /// 検索結果を列挙する。
-  /// 非同期的に結果を伸ばしていくために列の列を返す。
-  let find word dict =
-    match _searchSource with
-    | SearchSource.All ->
-        if word |> Str.isNullOrWhiteSpace
-        then Seq.empty
-        else
-          dict |> Dict.findInfix word
-          |> Seq.map (Seq.map (FileNodeViewModel.ofFileNode dict))
-    | SearchSource.Dir (_, items) ->
-        items |> Seq.filter (fun item ->
-          let node = dict |> Dict.findNode item.FileNodeId
-          in node.Name |> Str.contains word
-          )
-        |> Seq.singleton
+  let mutable _selectedIndex = -1
 
-  let searchAsync () =
-    async {
-      dispatcher.Invoke(fun () ->
-        _foundListViewModel.Items <- ObservableCollection()
-        )
-      let itemListList =
-        find _searchText _dict
-      for items in itemListList do
-        dispatcher.Invoke(fun () ->
-          _foundListViewModel.Items
-          |> ObservableCollection.addRange (items |> Seq.toObservableCollection)
-          )
-    }
-
-  let searchIncrementally prevSearchText =
-    if _searchText |> Str.isNullOrEmpty then
-      _searchSource <- SearchSource.All
-
-    if (_searchText |> Str.startsWith prevSearchText)
-      && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
-    then // If just appended some chars then reduce candidates.
-      _foundListViewModel.Items
-      |> ObservableCollection.removeIf
-          (fun item -> item.Name |> Str.contains _searchText |> not)
-    else
-      searchAsync () |> Async.Start
+  let _trySelectedNode () =
+    _searcher.FoundNodes |> Seq.tryItem _selectedIndex
 
   let _setSearchText v =
     let prevSearchText = _searchText
     _searchText <- v
     this.RaisePropertyChanged("SearchText")
-    searchIncrementally prevSearchText
+    _searcher.SearchAsync(prevSearchText, _searchText) |> Async.Start
 
   let _commitCommand =
     Command.create (fun _ -> true) (fun _ ->
-      _foundListViewModel.SelectFirstIfNoSelection()
-      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        let node      = _dict |> Dict.findNode item.FileNodeId
+      this.SelectFirstIfNoSelection()
+      _trySelectedNode () |> Option.iter (fun node ->
         match _dict |> Dict.tryExecute node with
         | Ok (dict, _) ->
-            _dict <- dict
+            _searcher.Dict <- dict
             _setSearchText ""
         | Bad es ->
-            _foundListViewModel.Items.Remove(item) |> ignore
-            _dict <- _dict |> Dict.removeNode node.Id
+            _searcher.Dict <- _dict |> Dict.removeNode node.Id
         ))
     |> fst
 
   let _selectDir nodeId =
-    let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode nodeId
-    _dict <- dict
-    let items =
-      nodeIds |> Seq.map (fun nodeId ->
-        dict |> Dict.findNode nodeId
-        |> FileNodeViewModel.ofFileNode _dict
-        )
     _setSearchText ""
-    _searchSource <- SearchSource.Dir (nodeId, items)
-    _foundListViewModel.Items <- items |> Seq.toObservableCollection
+    _searcher.BrowseDir(nodeId)
 
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->
-      _foundListViewModel.SelectFirstIfNoSelection()
-      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        _selectDir item.FileNodeId
+      this.SelectFirstIfNoSelection()
+      _trySelectedNode () |> Option.iter (fun node ->
+        _selectDir node.Id
         ))
     |> fst
 
   let _selectParentDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       option {
-        _foundListViewModel.SelectFirstIfNoSelection()
-        let! item       = _foundListViewModel.TrySelectedItem()
-        let node        = _dict |> Dict.findNode item.FileNodeId
+        this.SelectFirstIfNoSelection()
+        let! node       = _trySelectedNode ()
         let! parentId   = node.ParentId
         return _selectDir parentId
       } |> Option.getOr ())
     |> fst
 
+  do
+    _searcher.FoundNodesChanged.Add(fun _ ->
+      this.RaisePropertyChanged("ItemChunks")
+      )
+
   member this.SearchText
     with get () = _searchText
     and  set v  = _setSearchText v
 
-  member this.FoundList = _foundListViewModel
+  member this.SelectedIndex
+    with get () = _selectedIndex
+    and  set v  =
+      _selectedIndex <- v
+      this.RaisePropertyChanged("SelectedIndex")
+
+  member this.SelectFirstIfNoSelection() =
+    if this.SelectedIndex < 0 && (_searcher.FoundNodes |> Seq.isEmpty |> not) then
+      this.SelectedIndex <- 0
+
+  member this.ItemChunks
+    with get () =
+      _searcher.FoundNodes
+      |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+      |> Seq.chunkBySize 100
+    and  set (itemChunks: seq<array<FileNodeViewModel>>) =
+      itemChunks |> Seq.collect id
+      |> Seq.map (fun item -> _dict |> Dict.findNode item.FileNodeId)
+      |> (fun nodes -> _searcher.FoundNodes <- nodes)  // raises PropertyChanged("ItemChunks")
 
   member this.CommitCommand = _commitCommand
   member this.SelectDirCommand = _selectDirCommand
