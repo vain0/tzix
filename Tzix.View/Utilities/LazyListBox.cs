@@ -53,38 +53,56 @@ namespace Tzix.View.Utilities
         {
             var self = sender as LazyListBox;
             if (self == null) return;
-            self.ObservableItemsSource.Clear();
+            self._clears = true;
             self._unloadedChunks = self.LazyItemsSource;
             var task = self.FetchNextItems();
         }
-        
+
+        private bool _clears = false;
         private IEnumerable<IEnumerable> _unloadedChunks;
         private CancellationTokenSource _addTaskCanceller;
 
         private async Task FetchNextItems()
         {
-            if (_unloadedChunks == null || !_unloadedChunks.Any()) return;
-
-            var source = ObservableItemsSource;
-            if (source == null) return;
-
-            _addTaskCanceller?.Cancel(throwOnFirstException: true);
-            _addTaskCanceller = new CancellationTokenSource();
-            var newItems = await Task.Factory.StartNew(() =>
+            try
             {
-                var nextChunk = _unloadedChunks.First();
-                return nextChunk.Cast<object>().ToArray();
-            }, _addTaskCanceller.Token);
-            if (_addTaskCanceller.IsCancellationRequested) return;
+                if (_unloadedChunks == null || !_unloadedChunks.Any()) return;
 
-            _unloadedChunks = _unloadedChunks.Skip(1);
-            Dispatcher.Invoke(() =>
-            {
-                foreach (var x in newItems)
+                var source = ObservableItemsSource;
+                if (source == null) return;
+
+                _addTaskCanceller?.Cancel(throwOnFirstException: true);
+                _addTaskCanceller = new CancellationTokenSource();
+                var newItems = await Task.Factory.StartNew(() =>
                 {
-                    source.Add(x);
-                }
-            });
+                    var nextChunk = _unloadedChunks.First();
+                    return nextChunk.Cast<object>().ToArray();
+                }, _addTaskCanceller.Token);
+                if (_addTaskCanceller.IsCancellationRequested) return;
+
+                _unloadedChunks = _unloadedChunks.Skip(1);
+                Dispatcher.Invoke(() =>
+                {
+                    ClearIfNecessary();
+                    foreach (var x in newItems)
+                    {
+                        source.Add(x);
+                    }
+                });
+            }
+            finally
+            {
+                ClearIfNecessary();
+            }
+        }
+
+        private void ClearIfNecessary()
+        {
+            if (_clears)
+            {
+                _clears = false;
+                ObservableItemsSource.Clear();
+            }
         }
 
         private void OnScrollChanged(object sender, RoutedEventArgs e0)

@@ -50,7 +50,9 @@ type Searcher(_dict: Dict) as this =
     let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode nodeId
     _dict <- dict
     let nodes =
-      nodeIds |> Seq.map (fun nodeId -> dict |> Dict.findNode nodeId)
+      nodeIds
+      |> Seq.map (fun nodeId -> dict |> Dict.findNode nodeId)
+      |> Seq.toList
     _searchSource <- SearchSource.Dir (nodeId, nodes)
     _setFoundNodes nodes
 
