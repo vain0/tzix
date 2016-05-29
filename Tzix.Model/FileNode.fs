@@ -14,17 +14,10 @@ module FileNode =
     }
 
   let excludes rule (file: FileSystemInfo) =
-    let excludesByRule () =
+    [
       rule |> ImportRule.excludes file.Name
-    let forbiddenAttributes =
-      [
-        FileAttributes.Temporary
-        FileAttributes.Offline
-      ]
-    let excludesByAttributes () =
-      forbiddenAttributes |> List.exists (fun a -> file.Attributes.HasFlag(a))
-    in
-      excludesByRule () || excludesByAttributes ()
+      file.Attributes.HasFlag(FileAttributes.Temporary)
+    ] |> List.exists id
 
   let enumSubfiles rule dir =
     let subfiles    =
