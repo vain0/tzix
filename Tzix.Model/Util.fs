@@ -1,5 +1,6 @@
 ﻿namespace Tzix.Model
 
+open Basis.Core
 open Dyxi.Util
 
 [<AutoOpen>]

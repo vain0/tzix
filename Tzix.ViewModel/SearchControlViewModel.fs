@@ -37,7 +37,7 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
           )
         |> Seq.singleton
 
-  let searchIncrementally () =
+  let searchAsync () =
     async {
       dispatcher.Invoke(fun () ->
         _foundListViewModel.Items <- ObservableCollection()
@@ -50,14 +50,25 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
           |> ObservableCollection.addRange (items |> Seq.toObservableCollection)
           )
     }
-    |> Async.Start
 
-  let _setSearchText v =
-    _searchText <- v
-    this.RaisePropertyChanged("SearchText")
+  let searchIncrementally prevSearchText =
     if _searchText |> Str.isNullOrEmpty then
       _searchSource <- SearchSource.All
-    searchIncrementally ()
+
+    if (_searchText |> Str.startsWith prevSearchText)
+      && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
+    then // If just appended some chars then reduce candidates.
+      _foundListViewModel.Items
+      |> ObservableCollection.removeIf
+          (fun item -> item.Name |> Str.contains _searchText |> not)
+    else
+      searchAsync () |> Async.Start
+
+  let _setSearchText v =
+    let prevSearchText = _searchText
+    _searchText <- v
+    this.RaisePropertyChanged("SearchText")
+    searchIncrementally prevSearchText
 
   let _commitCommand =
     Command.create (fun _ -> true) (fun _ ->

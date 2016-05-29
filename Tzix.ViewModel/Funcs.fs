@@ -8,5 +8,6 @@ module FileNodeViewModel =
   let ofFileNode dict node =
     {
       FileNodeId            = node.Id
+      Name                  = node.Name
       ShortName             = node |> FileNode.shortName dict
     }

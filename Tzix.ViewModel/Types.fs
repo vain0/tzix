@@ -18,6 +18,7 @@ module Types =
   type FileNodeViewModel =
     {
       FileNodeId        : Id
+      Name              : string
       ShortName         : string
     }
 
