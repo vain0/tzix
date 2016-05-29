@@ -37,11 +37,10 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
     | AppState.Loading ->
         match _searchControlOpt with
         | None ->
-              this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
-              this.LoadDictAsync() |> Async.Start
+            this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
+            this.LoadDictAsync() |> Async.Start
         | Some _ ->
             this.TransStateTo(AppState.Running)
-
     | AppState.Running ->
         match _searchControlOpt with
         | None   -> this.TransStateTo(AppState.Loading)
