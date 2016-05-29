@@ -74,21 +74,35 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         ))
     |> fst
 
+  let _selectDir nodeId =
+    let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode nodeId
+    _dict <- dict
+    let items =
+      nodeIds |> Seq.map (fun nodeId ->
+        dict |> Dict.findNode nodeId
+        |> FileNodeViewModel.ofFileNode _dict
+        )
+    _setSearchText ""
+    _searchSource <- SearchSource.Dir (nodeId, items)
+    _foundListViewModel.Items <- items |> Seq.toObservableCollection
+
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       _foundListViewModel.SelectFirstIfNoSelection()
       _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
-        let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode item.FileNodeId
-        _dict <- dict
-        let items =
-          nodeIds |> Seq.map (fun nodeId ->
-            dict |> Dict.findNode nodeId
-            |> FileNodeViewModel.ofFileNode _dict
-            )
-        _setSearchText ""
-        _searchSource <- SearchSource.Dir (item.FileNodeId, items)
-        _foundListViewModel.Items <- items |> Seq.toObservableCollection
+        _selectDir item.FileNodeId
         ))
+    |> fst
+
+  let _selectParentDirCommand =
+    Command.create (fun _ -> true) (fun _ ->
+      option {
+        _foundListViewModel.SelectFirstIfNoSelection()
+        let! item       = _foundListViewModel.TrySelectedItem()
+        let node        = _dict |> Dict.findNode item.FileNodeId
+        let! parentId   = node.ParentId
+        return _selectDir parentId
+      } |> Option.getOr ())
     |> fst
 
   member this.SearchText
@@ -99,5 +113,6 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   member this.CommitCommand = _commitCommand
   member this.SelectDirCommand = _selectDirCommand
+  member this.SelectParentDirCommand = _selectParentDirCommand
 
   member this.Dict = _dict

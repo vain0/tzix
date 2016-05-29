@@ -44,6 +44,7 @@
                 <ListBox.InputBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding DataContext.CommitCommand, ElementName=_searchControl}" />
                     <KeyBinding Gesture="Question" Command="{Binding DataContext.SelectDirCommand, ElementName=_searchControl}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding DataContext.SelectParentDirCommand, ElementName=_searchControl}" />
                 </ListBox.InputBindings>
             </ListBox>
         </Grid>
