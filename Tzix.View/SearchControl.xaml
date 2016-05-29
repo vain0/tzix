@@ -24,6 +24,8 @@
                 >
                 <TextBox.InputBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                    <KeyBinding Gesture="Ctrl+Right" Command="{Binding SelectDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding SelectParentDirCommand}" />
                 </TextBox.InputBindings>
             </TextBox>
         </Grid>
