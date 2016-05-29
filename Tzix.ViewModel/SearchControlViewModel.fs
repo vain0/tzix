@@ -8,6 +8,7 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
+
 type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
 
@@ -15,7 +16,26 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let mutable _dict = dict
 
+  let mutable _searchSource = SearchSource.All
+
   let mutable _searchText = ""
+
+  /// 検索結果を列挙する。
+  /// 非同期的に結果を伸ばしていくために列の列を返す。
+  let find word dict =
+    match _searchSource with
+    | SearchSource.All ->
+        if word |> Str.isNullOrWhiteSpace
+        then Seq.empty
+        else
+          dict |> Dict.findInfix word
+          |> Seq.map (Seq.map (FileNodeViewModel.ofFileNode dict))
+    | SearchSource.Dir (_, items) ->
+        items |> Seq.filter (fun item ->
+          let node = dict |> Dict.findNode item.FileNodeId
+          in node.Name |> Str.contains word
+          )
+        |> Seq.singleton
 
   let searchIncrementally () =
     async {
@@ -23,16 +43,11 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         _foundListViewModel.Items <- ObservableCollection()
         )
       let itemListList =
-        if _searchText |> Str.isNullOrWhiteSpace
-        then Seq.singleton Seq.empty
-        else _dict |> Dict.findInfix _searchText
+        find _searchText _dict
       for items in itemListList do
-        let items =
-          items
-          |> Seq.map (FileNodeViewModel.ofFileNode _dict)
-          |> Seq.toObservableCollection
         dispatcher.Invoke(fun () ->
-          _foundListViewModel.Items |> ObservableCollection.addRange items
+          _foundListViewModel.Items
+          |> ObservableCollection.addRange (items |> Seq.toObservableCollection)
           )
     }
     |> Async.Start
@@ -40,6 +55,8 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   let _setSearchText v =
     _searchText <- v
     this.RaisePropertyChanged("SearchText")
+    if _searchText |> Str.isNullOrEmpty then
+      _searchSource <- SearchSource.All
     searchIncrementally ()
 
   let _commitCommand =
@@ -57,6 +74,23 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         ))
     |> fst
 
+  let _selectDirCommand =
+    Command.create (fun _ -> true) (fun _ ->
+      _foundListViewModel.SelectFirstIfNoSelection()
+      _foundListViewModel.TrySelectedItem() |> Option.iter (fun item ->
+        let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode item.FileNodeId
+        _dict <- dict
+        let items =
+          nodeIds |> Seq.map (fun nodeId ->
+            dict |> Dict.findNode nodeId
+            |> FileNodeViewModel.ofFileNode _dict
+            )
+        _setSearchText ""
+        _searchSource <- SearchSource.Dir (item.FileNodeId, items)
+        _foundListViewModel.Items <- items |> Seq.toObservableCollection
+        ))
+    |> fst
+
   member this.SearchText
     with get () = _searchText
     and  set v  = _setSearchText v
@@ -64,5 +98,6 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   member this.FoundList = _foundListViewModel
 
   member this.CommitCommand = _commitCommand
+  member this.SelectDirCommand = _selectDirCommand
 
   member this.Dict = _dict

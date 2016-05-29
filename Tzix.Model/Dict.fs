@@ -124,3 +124,55 @@ module Dict =
       |> Seq.map (fun (KeyValue (_, nodeIds)) ->
           find nodeIds
           )
+
+  /// ディレクトリに注目した状態になる。
+  /// ディレクトリの直下にある各ファイルと、その子ノードを照合して不整合を正す。
+  /// 実在するノードのリストを優先度降順で返す。
+  let selectDirectoryNode nodeId dict =
+    let node = dict |> findNode nodeId
+    let dir =
+      DirectoryInfo(node |> FileNode.fullPath dict)
+    /// Subfiles and subdirs actually exist inside the directory.
+    let (subfiles, subdirs) =
+      dir |> FileNode.enumSubfiles dict.ImportRule
+    /// A map from file names to node id's.
+    let subnodes =
+      dict.Subfiles
+      |> MultiMap.findAll nodeId
+      |> Seq.map (fun subnodeId ->
+          let node = dict |> findNode subnodeId
+          in (node.Name, node.Id)
+          )
+      |> Map.ofSeq
+    /// 直下に実在する各ファイルと、ノードIDを対消滅させていき、
+    /// 対応していないノードとファイルを列挙する。
+    let (unknownSubnodes, unknownSubfiles) =
+      Seq.append
+        (subfiles |> Seq.cast<FileSystemInfo>)
+        (subdirs |> Seq.cast<FileSystemInfo>)
+      |> Seq.fold (fun (uns, ufs) file ->
+          match uns |> Map.tryFind file.Name with
+          | Some nodeId ->
+              (uns |> Map.remove file.Name, ufs)
+          | None ->
+              (uns, file :: ufs)
+          ) (subnodes, [])
+    let newNodes =
+      unknownSubfiles
+      |> List.map (fun file -> FileNode.create dict file.Name (Some nodeId))
+    // 実在しないノードを削除して、未登録のファイルを登録する。
+    let dict =
+      dict
+      |> fold' (unknownSubnodes |> Map.values) removeNode
+      |> fold' newNodes addNode
+    let actualSubnodes =
+      ( (subnodes |> Map.values |> Set.ofSeq)
+      + (newNodes |> List.map (fun node -> node.Id) |> Set.ofList)
+      - (unknownSubnodes |> Map.values |> Set.ofSeq)
+      )
+    let subnodes =
+      actualSubnodes
+      |> Set.toList
+      |> List.sortByDescending (fun nodeId -> (dict |> findNode nodeId).Priority)
+    in
+      (dict, actualSubnodes)

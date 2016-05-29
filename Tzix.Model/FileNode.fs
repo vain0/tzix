@@ -26,6 +26,15 @@ module FileNode =
     in
       excludesByRule () || excludesByAttributes ()
 
+  let enumSubfiles rule dir =
+    let subfiles    =
+      dir |> DirectoryInfo.getAllFilesIfAble
+      |> Array.filter (excludes rule >> not)
+    let subdirs     =
+      dir |> DirectoryInfo.getAllDirectoriesIfAble
+      |> Array.filter (excludes rule >> not)
+    in (subfiles, subdirs)
+
   let internal enumFromDirectory
       (dict: Dict)
       : option<Id> -> DirectoryInfo -> list<FileNode>
@@ -33,12 +42,8 @@ module FileNode =
     let rec walk acc parentId (dir: DirectoryInfo) =
       let node        = create dict dir.Name parentId
       let nodeId      = Some node.Id
-      let subfiles    =
-        dir |> DirectoryInfo.getAllFilesIfAble
-        |> Array.filter (excludes dict.ImportRule >> not)
-      let subdirs     =
-        dir |> DirectoryInfo.getAllDirectoriesIfAble
-        |> Array.filter (excludes dict.ImportRule >> not)
+      let (subfiles, subdirs) =
+        enumSubfiles dict.ImportRule dir
       let acc         =
         (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
         @ acc

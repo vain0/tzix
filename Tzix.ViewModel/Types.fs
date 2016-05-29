@@ -20,3 +20,10 @@ module Types =
       FileNodeId        : Id
       ShortName         : string
     }
+
+  [<RequireQualifiedAccess>]
+  type SearchSource =
+    | All
+    /// 選択しているディレクトリのノードID
+    /// およびそのディレクトリの直下にあるノードのリスト (優先度降順)
+    | Dir         of Id * seq<FileNodeViewModel>

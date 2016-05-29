@@ -1,5 +1,7 @@
 ﻿namespace Tzix.ViewModel
 
+open System.Collections.ObjectModel
+open Basis.Core
 open Tzix.Model
 
 module FileNodeViewModel =
