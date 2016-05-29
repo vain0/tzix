@@ -8,7 +8,7 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-type SearchControlViewModel(_dict: Dict, dispatcher: Dispatcher) as this =
+type SearchControlViewModel(_dict: Dict, _dispatcher: Dispatcher) as this =
   inherit ViewModel.Base()
 
   let _searcher = Searcher(_dict)
@@ -17,7 +17,7 @@ type SearchControlViewModel(_dict: Dict, dispatcher: Dispatcher) as this =
 
   let mutable _selectedIndex = -1
 
-  let trySelectedNode () =
+  let _trySelectedNode () =
     _searcher.FoundNodes |> Seq.tryItem _selectedIndex
 
   let _setSearchText v =
@@ -29,7 +29,7 @@ type SearchControlViewModel(_dict: Dict, dispatcher: Dispatcher) as this =
   let _commitCommand =
     Command.create (fun _ -> true) (fun _ ->
       this.SelectFirstIfNoSelection()
-      trySelectedNode () |> Option.iter (fun node ->
+      _trySelectedNode () |> Option.iter (fun node ->
         match _dict |> Dict.tryExecute node with
         | Ok (dict, _) ->
             _searcher.Dict <- dict
@@ -46,7 +46,7 @@ type SearchControlViewModel(_dict: Dict, dispatcher: Dispatcher) as this =
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       this.SelectFirstIfNoSelection()
-      trySelectedNode () |> Option.iter (fun node ->
+      _trySelectedNode () |> Option.iter (fun node ->
         _selectDir node.Id
         ))
     |> fst
@@ -55,7 +55,7 @@ type SearchControlViewModel(_dict: Dict, dispatcher: Dispatcher) as this =
     Command.create (fun _ -> true) (fun _ ->
       option {
         this.SelectFirstIfNoSelection()
-        let! node       = trySelectedNode ()
+        let! node       = _trySelectedNode ()
         let! parentId   = node.ParentId
         return _selectDir parentId
       } |> Option.getOr ())
