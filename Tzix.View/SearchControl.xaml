@@ -40,7 +40,12 @@
                 >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <TextBlock Text="{Binding ShortName}" />
+                        <Grid>
+                            <TextBlock Text="{Binding ShortName}" />
+                            <Grid.InputBindings>
+                                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding DataContext.CommitCommand, ElementName=_searchControl}" />
+                            </Grid.InputBindings>
+                        </Grid>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
                 <ListBox.InputBindings>
