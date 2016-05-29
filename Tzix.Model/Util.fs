@@ -14,6 +14,10 @@ module Misc =
     fun () ->
       (! r) |> tap (fun k -> r := (k + 1L))
 
+module T2 =
+  let map f (x0, x1) =
+    (f x0, f x1)
+
 module List =
   /// Take `h` elements from head and `t` elements from tail
   /// then join the two lists with `infix`.

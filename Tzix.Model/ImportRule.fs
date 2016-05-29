@@ -18,9 +18,7 @@ module ImportRule =
     let (incs, excs) =
       rules |> List.map separate 
       |> List.unzip
-      |> (fun (incs, excs) ->
-          (incs |> List.choose id, excs |> List.choose id)
-          )
+      |> T2.map (List.choose id)
     in
       {
         Roots             = incs |> List.map (fun path -> DirectoryInfo(path))
