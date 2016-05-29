@@ -54,7 +54,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
         match result with
         | Pass dict
         | Warn (dict, _) ->
-            this.SearchControlViewModelOpt <- SearchControlViewModel(dict, _dispatcher) |> Some
+            this.SearchControlViewModelOpt <- SearchControlViewModel(dict) |> Some
             AppState.Running
         | Fail es ->
             let msg =

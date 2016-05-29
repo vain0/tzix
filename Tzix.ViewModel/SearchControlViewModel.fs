@@ -8,7 +8,7 @@ open Basis.Core
 open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 
-type SearchControlViewModel(_dict: Dict, _dispatcher: Dispatcher) as this =
+type SearchControlViewModel(_dict: Dict) as this =
   inherit ViewModel.Base()
 
   let _searcher = Searcher(_dict)
