@@ -36,33 +36,30 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
           in node.Name |> Str.contains word
           )
 
-  let searchAsync () =
+  let searchAsync prevSearchText =
     async {
+      if _searchText |> Str.isNullOrEmpty then
+        _searchSource <- SearchSource.All
+
       let items =
-        find _searchText _dict
+        if (_searchText |> Str.startsWith prevSearchText)
+          && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
+        then // If just appended some chars then reduce candidates.
+          _foundListViewModel.Items
+          |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
+        else
+          find _searchText _dict
+
       dispatcher.Invoke(fun () ->
         _foundListViewModel.Items <- items
         )
     }
 
-  let searchIncrementally prevSearchText =
-    if _searchText |> Str.isNullOrEmpty then
-      _searchSource <- SearchSource.All
-
-    if (_searchText |> Str.startsWith prevSearchText)
-      && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
-    then // If just appended some chars then reduce candidates.
-      _foundListViewModel.Items <-
-        _foundListViewModel.Items
-        |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
-    else
-      searchAsync () |> Async.Start
-
   let _setSearchText v =
     let prevSearchText = _searchText
     _searchText <- v
     this.RaisePropertyChanged("SearchText")
-    searchIncrementally prevSearchText
+    searchAsync prevSearchText |> Async.Start
 
   let _commitCommand =
     Command.create (fun _ -> true) (fun _ ->
