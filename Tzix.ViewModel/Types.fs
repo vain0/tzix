@@ -27,4 +27,4 @@ module Types =
     | All
     /// 選択しているディレクトリのノードID
     /// およびそのディレクトリの直下にあるノードのリスト (優先度降順)
-    | Dir         of Id * seq<FileNodeViewModel>
+    | Dir         of Id * seq<FileNode>

@@ -20,8 +20,15 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
 
   let mutable _searchText = ""
 
+  let mutable _foundNodes =
+    (Seq.empty: seq<FileNode>)
+
+  let _setNodes nodes =
+    _foundNodes <- nodes
+    _foundListViewModel.Items <- nodes |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+
   /// 検索結果を列挙する。
-  let find word dict =
+  let findNodes word =
     match _searchSource with
     | SearchSource.All ->
         if word |> Str.isNullOrWhiteSpace
@@ -29,11 +36,9 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
         else
           dict |> Dict.findInfix word
           |> Seq.collect id
-          |> Seq.map (FileNodeViewModel.ofFileNode dict)
-    | SearchSource.Dir (_, items) ->
-        items |> Seq.filter (fun item ->
-          let node = dict |> Dict.findNode item.FileNodeId
-          in node.Name |> Str.contains word
+    | SearchSource.Dir (_, nodes) ->
+        nodes |> Seq.filter (fun node ->
+          node.Name |> Str.contains word
           )
 
   let searchAsync prevSearchText =
@@ -41,18 +46,15 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
       if _searchText |> Str.isNullOrEmpty then
         _searchSource <- SearchSource.All
 
-      let items =
+      let nodes =
         if (_searchText |> Str.startsWith prevSearchText)
           && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
         then // If just appended some chars then reduce candidates.
-          _foundListViewModel.Items
+          _foundNodes
           |> Seq.filter (fun item -> item.Name |> Str.contains _searchText)
         else
-          find _searchText _dict
-
-      dispatcher.Invoke(fun () ->
-        _foundListViewModel.Items <- items
-        )
+          findNodes _searchText
+      _setNodes nodes
     }
 
   let _setSearchText v =
@@ -78,14 +80,11 @@ type SearchControlViewModel(dict: Dict, dispatcher: Dispatcher) as this =
   let _selectDir nodeId =
     let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode nodeId
     _dict <- dict
-    let items =
-      nodeIds |> Seq.map (fun nodeId ->
-        dict |> Dict.findNode nodeId
-        |> FileNodeViewModel.ofFileNode _dict
-        )
+    let nodes =
+      nodeIds |> Seq.map (fun nodeId -> dict |> Dict.findNode nodeId)
     _setSearchText ""
-    _searchSource <- SearchSource.Dir (nodeId, items)
-    _foundListViewModel.Items <- items
+    _searchSource <- SearchSource.Dir (nodeId, nodes)
+    _setNodes nodes
 
   let _selectDirCommand =
     Command.create (fun _ -> true) (fun _ ->
