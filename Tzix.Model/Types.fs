@@ -36,3 +36,10 @@ module Types =
       NextId              : Id
       Nodes               : array<FileNode>
     }
+
+  [<RequireQualifiedAccess>]
+  type SearchSource =
+    | All
+    /// 選択しているディレクトリのノードID
+    /// およびそのディレクトリの直下にあるノードのリスト (優先度降順)
+    | Dir         of Id * seq<FileNode>
