@@ -10,7 +10,7 @@ module Types =
 
   type ImportRule =
     {
-      Roots               : list<DirectoryInfo>
+      Roots               : list<IDirectory>
       Exclusions          : list<Regex>
     }
 
