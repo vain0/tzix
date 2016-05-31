@@ -32,17 +32,19 @@ module FileNode =
   /// Creates an array (instead of a list) for performance.
   let enumFromDirectory
       (dict: Dict)
-      : option<Id> -> IDirectory -> array<FileNode>
+      : ref<option<Id>> -> IDirectory -> array<unit -> FileNode>
     =
-    let rec walk parentId (dir: IDirectory) =
+    let rec walk parentIdRef (dir: IDirectory) =
       [|
-        let node        = create dict dir.Name parentId
-        let nodeId      = Some node.Id
+        let nodeIdRef   = ref None
+        let node ()     = 
+          create dict dir.Name (! parentIdRef)
+          |> tap (fun node -> nodeIdRef := Some node.Id)
         let (subfiles, subdirs) =
           enumSubfiles dict.ImportRule dir
         yield node
-        yield! subfiles |> Array.map (fun file -> create dict file.Name nodeId)
-        yield! subdirs |> Array.collect (walk nodeId)
+        yield! subfiles |> Array.map (fun file () -> create dict file.Name (! nodeIdRef))
+        yield! subdirs |> Array.collect (walk nodeIdRef)
       |]
     in walk
 
