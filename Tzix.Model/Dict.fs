@@ -51,7 +51,9 @@ module Dict =
       let parentId      = parents |> List.tryLast |> Option.map (fun node -> node.Id)
       let files         = dir |> FileNode.enumFromDirectory dict parentId
       in
-        dict |> addNodes (parents @ files)
+        dict
+        |> addNodes parents
+        |> addNodes files
 
   let import rule dict =
     { dict with ImportRule = rule }

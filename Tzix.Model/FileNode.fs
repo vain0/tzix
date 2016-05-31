@@ -28,22 +28,23 @@ module FileNode =
       |> Array.filter (excludes rule >> not)
     in (subfiles, subdirs)
 
+  /// Enumerates files in a directory recursively and converts them into FileNodes.
+  /// Creates an array (instead of a list) for performance.
   let enumFromDirectory
       (dict: Dict)
-      : option<Id> -> IDirectory -> list<FileNode>
+      : option<Id> -> IDirectory -> array<FileNode>
     =
-    let rec walk acc parentId (dir: IDirectory) =
-      let node        = create dict dir.Name parentId
-      let nodeId      = Some node.Id
-      let (subfiles, subdirs) =
-        enumSubfiles dict.ImportRule dir
-      let acc         =
-        (subfiles |> Array.map (fun file -> create dict file.Name nodeId) |> Array.toList)
-        @ acc
-      in 
-        (node :: acc) |> fold' subdirs (fun dir acc -> walk acc nodeId dir)
-    in
-      walk []
+    let rec walk parentId (dir: IDirectory) =
+      [|
+        let node        = create dict dir.Name parentId
+        let nodeId      = Some node.Id
+        let (subfiles, subdirs) =
+          enumSubfiles dict.ImportRule dir
+        yield node
+        yield! subfiles |> Array.map (fun file -> create dict file.Name nodeId)
+        yield! subdirs |> Array.collect (walk nodeId)
+      |]
+    in walk
 
   /// Enumerates all ancestor directories from the directory, excluding itself,
   /// and converts them into FileNode instances.
