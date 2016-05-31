@@ -34,7 +34,15 @@ module Dict =
     dict |> fold' nodes addNode
 
   let removeNode nodeId dict =
-    { dict with FileNodes = dict.FileNodes |> Map.remove nodeId }
+    let node          = dict |> findNode nodeId
+    let dict          = { dict with FileNodes = dict.FileNodes |> Map.remove nodeId }
+    let dict =
+      match node.ParentId with
+      | Some parentId -> { dict with Subfiles = dict.Subfiles |> MultiMap.removeOne parentId nodeId }
+      | None          -> dict
+    let dict =
+      { dict with PriorityIndex = dict.PriorityIndex |> MultiMap.removeOne node.Priority nodeId }
+    in dict
 
   let importDirectory dir dict =
     match dir |> FileNode.enumParents dict with
