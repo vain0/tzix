@@ -136,7 +136,7 @@ module Dict =
   let selectDirectoryNode nodeId dict =
     let node = dict |> findNode nodeId
     let dir =
-      DirectoryInfo(node |> FileNode.fullPath dict)
+      MyDirectoryInfo(node |> FileNode.fullPath dict)
     /// Subfiles and subdirs actually exist inside the directory.
     let (subfiles, subdirs) =
       dir |> FileNode.enumSubfiles dict.ImportRule
