@@ -5,7 +5,7 @@ open System.IO
 open Dyxi.Util
 
 module FileNode =
-  let internal create (dict: Dict) (name: string) parentIdOpt =
+  let create (dict: Dict) (name: string) parentIdOpt =
     {
       Id              = dict.Counter ()
       ParentId        = parentIdOpt
@@ -28,7 +28,7 @@ module FileNode =
       |> Array.filter (excludes rule >> not)
     in (subfiles, subdirs)
 
-  let internal enumFromDirectory
+  let enumFromDirectory
       (dict: Dict)
       : option<Id> -> DirectoryInfo -> list<FileNode>
     =

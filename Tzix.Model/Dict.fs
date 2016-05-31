@@ -45,6 +45,10 @@ module Dict =
       in
         dict |> addNodes (parents @ files)
 
+  let import rule dict =
+    { dict with ImportRule = rule }
+    |> fold' rule.Roots importDirectory
+
   let incrementPriority node dict =
     let node'         = { node with Priority = node.Priority + 1 }
     let dict          = { dict with FileNodes = dict.FileNodes |> Map.add node.Id node' }
@@ -85,14 +89,6 @@ module Dict =
       return ImportRule.parse file.Name text
     }
 
-  let importAsync (file: FileInfo) =
-    async {
-      let! rule = loadImportRule file
-      return
-        { empty with ImportRule = rule }
-        |> fold' rule.Roots importDirectory
-    }
-
   let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
     async {
       try
@@ -103,7 +99,8 @@ module Dict =
         return dict |> pass
       with | e1 ->
         try
-          let! dict = importAsync importRuleFile
+          let! rule = loadImportRule importRuleFile
+          let dict = empty |> import rule
           return dict |> pass
         with | e2 ->
           return Result.Bad [e1; e2]
