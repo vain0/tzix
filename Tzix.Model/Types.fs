@@ -10,7 +10,7 @@ module Types =
 
   type ImportRule =
     {
-      Roots               : list<DirectoryInfo>
+      Roots               : list<IDirectory>
       Exclusions          : list<Regex>
     }
 
@@ -29,6 +29,7 @@ module Types =
       Subfiles            : MultiMap<Id, Id>
       PriorityIndex       : MultiMap<Priority, Id>
       ImportRule          : ImportRule
+      FileSystem          : IFileSystem
     }
 
   type DictSpec =
