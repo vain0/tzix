@@ -106,16 +106,17 @@ module DictTest =
       let dict'     =
         theDict
         |> addNewNode "tzix" "Tzix.Model.Test" |> fst
-        |> Dict.removeNode (theDict |> tryFirst "Tzix.View" |> Option.get).Id
-      let (dict'', actualSubnodeIds) =
+        |> Dict.removeNode (theDict |> tryFirst "Tzix.Model" |> Option.get).Id
+        |> Dict.incrementPriority (theDict |> tryFirst "Tzix.View" |> Option.get)
+      let (dict'', subnodeIds) =
         dict' |> Dict.browseNode node.Id
       // Nodes that actually exists under the directory added.
-      do! dict'' |> tryFirst "Tzix.View" |> Option.isSome |> assertPred
+      do! dict'' |> tryFirst "Tzix.Model" |> Option.isSome |> assertPred
       // Nodes that actually don't exists under the directory removed.
       do! dict'' |> tryFirst "Tzix.Model.Test" |> Option.isNone |> assertPred
       // Enumerates subfiles of the directory.
       let subnodeNames =
-        actualSubnodeIds
-        |> Set.map (fun nodeId -> (dict'' |> Dict.findNode nodeId).Name)
-      do! subnodeNames |> assertEquals (set ["Tzix.Model"; "Tzix.View"])
+        subnodeIds
+        |> List.map (fun nodeId -> (dict'' |> Dict.findNode nodeId).Name)
+      do! subnodeNames |> assertEquals ["Tzix.View"; "Tzix.Model"]
     }

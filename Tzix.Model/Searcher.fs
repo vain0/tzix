@@ -49,8 +49,7 @@ type Searcher(_dict: Dict) as this =
     _dict <- dict
     let nodes =
       nodeIds
-      |> Seq.map (fun nodeId -> dict |> Dict.findNode nodeId)
-      |> Seq.toList
+      |> List.map (fun nodeId -> dict |> Dict.findNode nodeId)
     _searchSource <- SearchSource.Dir (nodeId, nodes)
     _setFoundNodes nodes
 

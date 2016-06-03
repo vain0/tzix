@@ -188,4 +188,4 @@ module Dict =
       |> Set.toList
       |> List.sortByDescending (fun nodeId -> (dict |> findNode nodeId).Priority)
     in
-      (dict, actualSubnodes)
+      (dict, subnodes)
