@@ -4,14 +4,17 @@ module Tzix.Model.FileSystem
 open System.IO
 open Basis.Core
 
-type IFile =
+type IFileBase =
   abstract member Name: string
   abstract member Parent: option<IDirectory>
   abstract member Attributes: FileAttributes
   abstract member Exists: bool
 
+and IFile =
+  inherit IFileBase
+
 and IDirectory =
-  inherit IFile
+  inherit IFileBase
   
   abstract member GetFiles: unit -> IFile []
   abstract member GetDirectories: unit -> IDirectory []
@@ -96,12 +99,12 @@ module Directory =
     dir |> getAllDirectoriesIfAble |> Array.tryFind (fun dir -> dir.Name = name)
 
 module File =
-  let fullName (file: IFile) =
+  let fullName (file: IFileBase) =
     let ancestors =
       file.Parent
       |> Option.map (fun dir ->
           (dir |> Directory.ancestors) @ [dir]
-          |> List.map (fun dir -> dir :> IFile)
+          |> List.map (fun dir -> dir :> IFileBase)
           )
       |> Option.getOr []
     let names =
