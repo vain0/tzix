@@ -89,6 +89,12 @@ module Directory =
     with
     | _ -> [||]
 
+  let tryFindFile name dir =
+    dir |> getAllFilesIfAble |> Array.tryFind (fun file -> file.Name = name)
+
+  let tryFindDirectory name dir =
+    dir |> getAllDirectoriesIfAble |> Array.tryFind (fun dir -> dir.Name = name)
+
 module File =
   let fullName (file: IFile) =
     let ancestors =
