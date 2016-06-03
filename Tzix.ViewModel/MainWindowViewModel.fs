@@ -13,8 +13,8 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
 
   let mutable _pageIndex = PageIndex.MessageView
 
-  let _dictFile = FileInfo(@"tzix.json")
-  let _importRuleFile = FileInfo(@".tzix_import_rules")
+  let _dictFile = DotNetFileInfo(@"tzix.json") :> IFile
+  let _importRuleFile = DotNetFileInfo(@".tzix_import_rules") :> IFile
 
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
@@ -66,7 +66,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
   member this.Save() =
     _searchControlOpt |> Option.iter (fun searchControl ->
       try
-        File.WriteAllText(_dictFile.FullName, searchControl.Dict |> Dict.toJson)
+        _dictFile.WriteTextAsync(searchControl.Dict |> Dict.toJson) |> Async.RunSynchronously
       with | _ ->
         ()
       )

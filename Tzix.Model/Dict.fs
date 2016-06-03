@@ -92,20 +92,20 @@ module Dict =
   let ofJson fsys (json: string) =
     json |> Serialize.Json.deserialize<DictSpec> |> ofSpec fsys
 
-  let loadImportRule fsys file =
+  let loadImportRule fsys (file: IFile) =
     async {
-      let! text = file |> FileInfo.readTextAsync
+      let! text = file.ReadTextAsync()
       return ImportRule.parse fsys file.Name text
     }
 
   /// Tries to load dictionary from `dictFile`.
   /// If it fails, creates new dictionary based on the rule written in `importRuleFile`.
-  let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
+  let tryLoadAsync (dictFile: IFile) (importRuleFile: IFile) =
     async {
       let fsys = DotNetFileSystem.Instance
       try
         let! rule     = loadImportRule fsys importRuleFile
-        let! jsonText = dictFile |> FileInfo.readTextAsync
+        let! jsonText = dictFile.ReadTextAsync()
         let dict      = jsonText |> ofJson fsys
         let dict      = { dict with ImportRule = rule }
         return dict |> pass
