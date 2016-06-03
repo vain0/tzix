@@ -10,7 +10,7 @@ module ImportRule =
     | Include             of string
     | Exclude             of string
 
-  let ofRuleList rules =
+  let ofRuleList (fsys: IFileSystem) rules =
     let separate =
       function
       | Include s -> (Some s, None)
@@ -21,7 +21,7 @@ module ImportRule =
       |> T2.map (List.choose id)
     in
       {
-        Roots             = incs |> List.map (fun path -> DirectoryInfo(path))
+        Roots             = incs |> List.map (fun path -> fsys.DirectoryInfo(path))
         Exclusions        = excs |> List.map (fun pattern -> Regex(pattern))
       }
 
@@ -60,10 +60,10 @@ module ImportRule =
     let run (name: string) (source: string) =
       runParserOnString rules () name source
 
-  let parse name source =
+  let parse fsys name source =
     match Parser.run name source with
     | Success (rules, (), _) ->
-        rules |> ofRuleList
+        rules |> ofRuleList fsys
     | Failure (msg, err, ()) ->
         raise (Exception(msg))
 

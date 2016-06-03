@@ -8,13 +8,14 @@ open Chessie.ErrorHandling
 open Dyxi.Util
 
 module Dict =
-  let empty =
+  let empty fsys =
     {
       Counter             = createCounter 0L
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
       PriorityIndex       = MultiMap.empty
       ImportRule          = ImportRule.empty
+      FileSystem          = fsys
     }
 
   let findNode nodeId (dict: Dict) =
@@ -81,34 +82,37 @@ module Dict =
       Nodes           = dict.FileNodes |> Map.values |> Seq.toArray
     }
 
-  let ofSpec (spec: DictSpec) =
-    let dict = empty |> addNodes spec.Nodes
+  let ofSpec fsys (spec: DictSpec) =
+    let dict = empty fsys |> addNodes spec.Nodes
     in { dict with Counter = createCounter spec.NextId }
 
   let toJson dict =
     dict |> toSpec |> Serialize.Json.serialize<DictSpec>
 
-  let ofJson (json: string) =
-    json |> Serialize.Json.deserialize<DictSpec> |> ofSpec
+  let ofJson fsys (json: string) =
+    json |> Serialize.Json.deserialize<DictSpec> |> ofSpec fsys
 
-  let loadImportRule file =
+  let loadImportRule fsys file =
     async {
       let! text = file |> FileInfo.readTextAsync
-      return ImportRule.parse file.Name text
+      return ImportRule.parse fsys file.Name text
     }
 
+  /// Tries to load dictionary from `dictFile`.
+  /// If it fails, creates new dictionary based on the rule written in `importRuleFile`.
   let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
     async {
+      let fsys = DotNetFileSystem.Instance
       try
-        let! rule     = loadImportRule importRuleFile
+        let! rule     = loadImportRule fsys importRuleFile
         let! jsonText = dictFile |> FileInfo.readTextAsync
-        let dict      = jsonText |> ofJson
+        let dict      = jsonText |> ofJson fsys
         let dict      = { dict with ImportRule = rule }
         return dict |> pass
       with | e1 ->
         try
-          let! rule = loadImportRule importRuleFile
-          let dict = empty |> import rule
+          let! rule = loadImportRule fsys importRuleFile
+          let dict = empty fsys |> import rule
           return dict |> pass
         with | e2 ->
           return Result.Bad [e1; e2]
@@ -136,7 +140,7 @@ module Dict =
   let selectDirectoryNode nodeId dict =
     let node = dict |> findNode nodeId
     let dir =
-      DirectoryInfo(node |> FileNode.fullPath dict)
+      dict.FileSystem.DirectoryInfo(node |> FileNode.fullPath dict)
     /// Subfiles and subdirs actually exist inside the directory.
     let (subfiles, subdirs) =
       dir |> FileNode.enumSubfiles dict.ImportRule
@@ -153,8 +157,8 @@ module Dict =
     /// 対応していないノードとファイルを列挙する。
     let (unknownSubnodes, unknownSubfiles) =
       Seq.append
-        (subfiles |> Seq.cast<FileSystemInfo>)
-        (subdirs |> Seq.cast<FileSystemInfo>)
+        (subfiles |> Seq.cast<IFile>)
+        (subdirs |> Seq.cast<IFile>)
       |> Seq.fold (fun (uns, ufs) file ->
           match uns |> Map.tryFind file.Name with
           | Some nodeId ->
