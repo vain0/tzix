@@ -22,9 +22,7 @@ type Searcher(_dict: Dict) as this =
     | SearchSource.All ->
         if word |> Str.isNullOrWhiteSpace
         then Seq.empty
-        else
-          _dict |> Dict.findInfix word
-          |> Seq.collect id
+        else _dict |> Dict.findInfix word
     | SearchSource.Dir (_, nodes) ->
         nodes |> Seq.filter (fun node ->
           node.Name |> Str.contains word

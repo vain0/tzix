@@ -19,7 +19,7 @@ module DictTest =
   open TestData
 
   let tryFirst word dict =
-    dict |> Dict.findInfix word |> Seq.collect id |> Seq.tryHead
+    dict |> Dict.findInfix word |> Seq.tryHead
 
   //// Add new node named `name` under the node with name `parentName`.
   let addNewNode parentName name dict =
@@ -46,7 +46,6 @@ module DictTest =
   let findInfixTest =
     let f word =
       theDict |> Dict.findInfix word
-      |> Seq.collect id
       |> Seq.map (fun node -> node.Name)
       |> Set.ofSeq
     parameterize {

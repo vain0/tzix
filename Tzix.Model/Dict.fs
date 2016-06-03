@@ -118,6 +118,7 @@ module Dict =
           return Result.Bad [e1; e2]
     }
 
+  /// Enumerates nodes whose name contains `word` in priority descending order.
   let findInfix word dict =
     let find nodeIds =
       nodeIds |> Seq.choose (fun nodeId ->
@@ -130,7 +131,7 @@ module Dict =
       dict.PriorityIndex
       |> MultiMap.toMap
       |> Seq.rev
-      |> Seq.map (fun (KeyValue (_, nodeIds)) ->
+      |> Seq.collect (fun (KeyValue (_, nodeIds)) ->
           find nodeIds
           )
 
