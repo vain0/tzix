@@ -44,6 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Util.fs" />
+    <Compile Include="MockFileSystem.fs" />
+    <Compile Include="ImportRuleTest.fs" />
+    <Compile Include="DictTest.fs" />
+    <Compile Include="FileNodeTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
