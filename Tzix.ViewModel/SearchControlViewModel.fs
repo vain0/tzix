@@ -51,13 +51,15 @@ type SearchControlViewModel(_dict: Dict) as this =
         ))
     |> fst
 
-  let _browseParentDirCommand =
+  let _browseGrandparentDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       option {
         this.SelectFirstIfNoSelection()
         let! node       = _trySelectedNode ()
         let! parentId   = node.ParentId
-        return _browseDir parentId
+        let parentNode  = _dict |> Dict.findNode parentId
+        let! gpId       = parentNode.ParentId
+        return _browseDir gpId
       } |> Option.getOr ())
     |> fst
 
@@ -92,6 +94,6 @@ type SearchControlViewModel(_dict: Dict) as this =
 
   member this.CommitCommand = _commitCommand
   member this.BrowseDirCommand = _browseDirCommand
-  member this.BrowseParentDirCommand = _browseParentDirCommand
+  member this.BrowseGrandparentDirCommand = _browseGrandparentDirCommand
 
   member this.Dict = _dict

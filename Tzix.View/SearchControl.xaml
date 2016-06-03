@@ -26,7 +26,7 @@
                 <TextBox.InputBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
                     <KeyBinding Gesture="Ctrl+Right" Command="{Binding BrowseDirCommand}" />
-                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseParentDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseGrandparentDirCommand}" />
                 </TextBox.InputBindings>
             </TextBox>
         </Grid>
@@ -51,7 +51,7 @@
                 <ListBox.InputBindings>
                     <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
                     <KeyBinding Gesture="Ctrl+Right" Command="{Binding BrowseDirCommand}" />
-                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseParentDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseGrandparentDirCommand}" />
                 </ListBox.InputBindings>
             </util:LazyListBox>
         </Grid>

@@ -23,7 +23,7 @@ Type the Enter/Return key to execute the selected file/directory. Or it just van
 ### Browse a directory
 In "directory browsing mode", **Tzix** searches for files directly inside the directory. And it updates the data related to the directory in the database. (ディレクトリ閲覧モードでは、そのディレクトリの直下にあるファイルだけが検索される。また、データベース内のこのディレクトリに関するデータが更新される。)
 
-To browse a directory, select it and type ``Ctrl+→``; or double click it. ``Ctrl+←`` to browse the parent directory of the selected file. (ディレクトリを閲覧するには、それを選択した状態で ``Ctrl+→`` を入力するか、それをダブルクリックすればよい。 ``Ctrl+←`` を入力すると、選択されたファイルやディレクトリの親ディレクトリを閲覧できる。)
+To browse a directory, select it and type ``Ctrl+→``; or double click it. ``Ctrl+←`` to browse the grandparent directory of the selected file. (ディレクトリを閲覧するには、それを選択した状態で ``Ctrl+→`` を入力するか、それをダブルクリックすればよい。 ``Ctrl+←`` を入力すると、選択されたファイルやディレクトリの祖父ディレクトリを閲覧できる。)
 
 ## License
 [MIT license](LICENSE.md)
