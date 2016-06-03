@@ -149,8 +149,8 @@ module Dict =
     /// 対応していないノードとファイルを列挙する。
     let (unknownSubnodes, unknownSubfiles) =
       Seq.append
-        (subfiles |> Seq.cast<FileSystemInfo>)
-        (subdirs |> Seq.cast<FileSystemInfo>)
+        (subfiles |> Seq.cast<IFile>)
+        (subdirs |> Seq.cast<IFile>)
       |> Seq.fold (fun (uns, ufs) file ->
           match uns |> Map.tryFind file.Name with
           | Some nodeId ->
