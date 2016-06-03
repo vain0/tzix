@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Tzix.ViewModel;
+using static Tzix.ViewModel.DispatcherTypes;
 
 namespace Tzix.View
 {
@@ -26,8 +27,8 @@ namespace Tzix.View
         {
             InitializeComponent();
             ShowsNavigationUI = false;
-
-            DataContext = new MainWindowViewModel(Dispatcher);
+            
+            DataContext = new MainWindowViewModel(new DotNetDispatcher(Dispatcher));
 
             ((INotifyPropertyChanged)ViewModel).PropertyChanged += OnPropertyChanged;
 
