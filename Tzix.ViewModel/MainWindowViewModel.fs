@@ -13,8 +13,8 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
 
   let mutable _pageIndex = PageIndex.MessageView
 
-  let dictFile = FileInfo(@"tzix.json")
-  let importRuleFile = FileInfo(@".tzix_import_rules")
+  let _dictFile = FileInfo(@"tzix.json")
+  let _importRuleFile = FileInfo(@".tzix_import_rules")
 
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
@@ -48,7 +48,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
 
   member this.LoadDictAsync() =
     async {
-      let! result = Dict.tryLoadAsync dictFile importRuleFile
+      let! result = Dict.tryLoadAsync _dictFile _importRuleFile
       let state =
         match result with
         | Pass dict
@@ -66,7 +66,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
   member this.Save() =
     _searchControlOpt |> Option.iter (fun searchControl ->
       try
-        File.WriteAllText(dictFile.FullName, searchControl.Dict |> Dict.toJson)
+        File.WriteAllText(_dictFile.FullName, searchControl.Dict |> Dict.toJson)
       with | _ ->
         ()
       )
