@@ -47,7 +47,7 @@ type Searcher(_dict: Dict) as this =
     }
 
   let _browseDir nodeId =
-    let (dict, nodeIds) = _dict |> Dict.selectDirectoryNode nodeId
+    let (dict, nodeIds) = _dict |> Dict.browseNode nodeId
     _dict <- dict
     let nodes =
       nodeIds

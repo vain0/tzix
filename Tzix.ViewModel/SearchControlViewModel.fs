@@ -39,25 +39,25 @@ type SearchControlViewModel(_dict: Dict) as this =
         ))
     |> fst
 
-  let _selectDir nodeId =
+  let _browseDir nodeId =
     _setSearchText ""
     _searcher.BrowseDir(nodeId)
 
-  let _selectDirCommand =
+  let _browseDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       this.SelectFirstIfNoSelection()
       _trySelectedNode () |> Option.iter (fun node ->
-        _selectDir node.Id
+        _browseDir node.Id
         ))
     |> fst
 
-  let _selectParentDirCommand =
+  let _browseParentDirCommand =
     Command.create (fun _ -> true) (fun _ ->
       option {
         this.SelectFirstIfNoSelection()
         let! node       = _trySelectedNode ()
         let! parentId   = node.ParentId
-        return _selectDir parentId
+        return _browseDir parentId
       } |> Option.getOr ())
     |> fst
 
@@ -91,7 +91,7 @@ type SearchControlViewModel(_dict: Dict) as this =
       |> (fun nodes -> _searcher.FoundNodes <- nodes)  // raises PropertyChanged("ItemChunks")
 
   member this.CommitCommand = _commitCommand
-  member this.SelectDirCommand = _selectDirCommand
-  member this.SelectParentDirCommand = _selectParentDirCommand
+  member this.BrowseDirCommand = _browseDirCommand
+  member this.BrowseParentDirCommand = _browseParentDirCommand
 
   member this.Dict = _dict

@@ -101,7 +101,7 @@ module DictTest =
       do! actual |> assertDictEquals theDict
     }
 
-  let selectDirectoryNodeTest =
+  let browseNodeTest =
     test {
       let node      = theDict |> tryFirst "tzix" |> Option.get
       let dict'     =
@@ -109,7 +109,7 @@ module DictTest =
         |> addNewNode "tzix" "Tzix.Model.Test" |> fst
         |> Dict.removeNode (theDict |> tryFirst "Tzix.View" |> Option.get).Id
       let (dict'', actualSubnodeIds) =
-        dict' |> Dict.selectDirectoryNode node.Id
+        dict' |> Dict.browseNode node.Id
       // Nodes that actually exists under the directory added.
       do! dict'' |> tryFirst "Tzix.View" |> Option.isSome |> assertPred
       // Nodes that actually don't exists under the directory removed.
