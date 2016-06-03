@@ -13,6 +13,8 @@ type SearchControlViewModel(_dict: Dict) as this =
 
   let _searcher = Searcher(_dict)
 
+  let _dict () = _searcher.Dict
+
   let mutable _searchText = ""
 
   let mutable _selectedIndex = -1
@@ -30,12 +32,12 @@ type SearchControlViewModel(_dict: Dict) as this =
     Command.create (fun _ -> true) (fun _ ->
       this.SelectFirstIfNoSelection()
       _trySelectedNode () |> Option.iter (fun node ->
-        match _dict |> Dict.tryExecute node with
+        match _dict () |> Dict.tryExecute node with
         | Ok (dict, _) ->
             _searcher.Dict <- dict
             _setSearchText ""
         | Bad es ->
-            _searcher.Dict <- _dict |> Dict.removeNode node.Id
+            _searcher.Dict <- _dict () |> Dict.removeNode node.Id
         ))
     |> fst
 
@@ -57,7 +59,7 @@ type SearchControlViewModel(_dict: Dict) as this =
         this.SelectFirstIfNoSelection()
         let! node       = _trySelectedNode ()
         let! parentId   = node.ParentId
-        let parentNode  = _dict |> Dict.findNode parentId
+        let parentNode  = _dict () |> Dict.findNode parentId
         let! gpId       = parentNode.ParentId
         return _browseDir gpId
       } |> Option.getOr ())
@@ -85,15 +87,15 @@ type SearchControlViewModel(_dict: Dict) as this =
   member this.ItemChunks
     with get () =
       _searcher.FoundNodes
-      |> Seq.map (FileNodeViewModel.ofFileNode _dict)
+      |> Seq.map (_dict () |> FileNodeViewModel.ofFileNode)
       |> Seq.chunkBySize 100
     and  set (itemChunks: seq<array<FileNodeViewModel>>) =
       itemChunks |> Seq.collect id
-      |> Seq.map (fun item -> _dict |> Dict.findNode item.FileNodeId)
+      |> Seq.map (fun item -> _dict () |> Dict.findNode item.FileNodeId)
       |> (fun nodes -> _searcher.FoundNodes <- nodes)  // raises PropertyChanged("ItemChunks")
 
   member this.CommitCommand = _commitCommand
   member this.BrowseDirCommand = _browseDirCommand
   member this.BrowseGrandparentDirCommand = _browseGrandparentDirCommand
 
-  member this.Dict = _dict
+  member this.Dict = _dict ()
