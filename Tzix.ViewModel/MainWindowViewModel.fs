@@ -8,16 +8,19 @@ open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 open Tzix.Model
 
-type MainWindowViewModel(_dispatcher: Dispatcher) =
+type MainWindowViewModel(_dictFile: IFile, _importRuleFile: IFile, _dispatcher: Dispatcher) =
   inherit ViewModel.Base()
 
   let mutable _pageIndex = PageIndex.MessageView
 
-  let _dictFile = DotNetFileInfo(@"tzix.json") :> IFile
-  let _importRuleFile = DotNetFileInfo(@".tzix_import_rules") :> IFile
-
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
+
+  new (dispatcher: Dispatcher) =
+    let fsys = DotNetFileSystem.Instance :> IFileSystem
+    let dictFile = fsys.FileInfo(@"tzix.json")
+    let importRuleFile = fsys.FileInfo(@".tzix_import_rules")
+    in MainWindowViewModel(dictFile, importRuleFile, dispatcher)
 
   member this.PageIndex
     with get () = _pageIndex
