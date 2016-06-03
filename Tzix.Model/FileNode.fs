@@ -59,6 +59,7 @@ module FileNode =
         |> Some
       parents |> List.scan folder None |> List.choose id |> Some
 
+  /// Returns ancestor nodes, including itself.
   let ancestors dict node =
     let rec loop acc node =
       let acc' = node :: acc
