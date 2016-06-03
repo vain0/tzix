@@ -134,9 +134,11 @@ module Dict =
           find nodeIds
           )
 
-  /// ディレクトリに注目した状態になる。
-  /// ディレクトリの直下にある各ファイルと、その子ノードを照合して不整合を正す。
-  /// 実在するノードのリストを優先度降順で返す。
+  /// Does things to browse a (directory) node. 
+  /// 1. Collates subfiles compiled in the dictionary
+  ///     and subfiles which actually exist under the directory.
+  /// 2. Returns a pair of the updated dictionary and a list,
+  ///     where the list is of nodes of the subfiles in priority descending order.
   let selectDirectoryNode nodeId dict =
     let node = dict |> findNode nodeId
     let dir =
@@ -153,8 +155,8 @@ module Dict =
           in (node.Name, node.Id)
           )
       |> Map.ofSeq
-    /// 直下に実在する各ファイルと、ノードIDを対消滅させていき、
-    /// 対応していないノードとファイルを列挙する。
+    /// Enumerates non-corresponding nodes and files
+    /// by pair annihilation between actual files and corresponding node id's.
     let (unknownSubnodes, unknownSubfiles) =
       Seq.append
         (subfiles |> Seq.cast<IFile>)
@@ -169,7 +171,8 @@ module Dict =
     let newNodes =
       unknownSubfiles
       |> List.map (fun file -> FileNode.create dict file.Name (Some nodeId))
-    // 実在しないノードを削除して、未登録のファイルを登録する。
+    /// Minus nodes which no longer exist,
+    /// plus new nodes of the subfiles which actually exist but unregistered.
     let dict =
       dict
       |> fold' (unknownSubnodes |> Map.values) removeNode
