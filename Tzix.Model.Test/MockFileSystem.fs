@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Text
 open Basis.Core
 open Persimmon
 open Persimmon.Syntax.UseTestNameByReflection
@@ -10,6 +11,8 @@ open Tzix.Model.Test
 
 type MockFile(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
   let mutable _exists = true
+
+  let mutable _content = ""
 
   new (name, parent) =
     MockFile(name, parent, FileAttributes.Normal)
@@ -27,6 +30,12 @@ type MockFile(_name: string, _parent: option<IDirectory>, _attributes: FileAttri
     member this.Attributes = _attributes
 
     member this.Exists = _exists
+
+    member this.ReadTextAsync() = async { return _content }
+
+    member this.WriteTextAsync(text) =
+       do _content <- text
+       async { return () }
 
 and MockDirectory
   ( _name: string

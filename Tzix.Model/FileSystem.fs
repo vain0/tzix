@@ -2,6 +2,8 @@
 module Tzix.Model.FileSystem
 
 open System.IO
+open System.Text
+open System.Threading.Tasks
 open Basis.Core
 
 type IFileBase =
@@ -12,6 +14,9 @@ type IFileBase =
 
 and IFile =
   inherit IFileBase
+
+  abstract member ReadTextAsync: unit -> Async<string>
+  abstract member WriteTextAsync: string -> Async<unit>
 
 and IDirectory =
   inherit IFileBase
@@ -36,6 +41,21 @@ type DotNetFileInfo(_file: FileInfo) =
     member this.Attributes = _file.Attributes
 
     member this.Exists = _file.Exists
+
+    member this.ReadTextAsync() =
+      async {
+        let stream = _file.OpenText()
+        let! text = stream.ReadToEndAsync() |> Async.AwaitTask
+        do stream.Dispose()
+        return text
+      }
+
+    member this.WriteTextAsync(text) =
+      async {
+        let stream = _file.OpenWrite()
+        do! stream.AsyncWrite(UTF8Encoding.UTF8.GetBytes(text))
+        do stream.Dispose()
+      }
 
 and DotNetDirectoryInfo(_dir: DirectoryInfo) =
   new (path: string) =
