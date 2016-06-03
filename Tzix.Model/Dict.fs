@@ -139,7 +139,7 @@ module Dict =
   ///     and subfiles which actually exist under the directory.
   /// 2. Returns a pair of the updated dictionary and a list,
   ///     where the list is of nodes of the subfiles in priority descending order.
-  let selectDirectoryNode nodeId dict =
+  let browseNode nodeId dict =
     let node = dict |> findNode nodeId
     let dir =
       dict.FileSystem.DirectoryInfo(node |> FileNode.fullPath dict)
