@@ -49,6 +49,7 @@
     <Compile Include="ImportRuleTest.fs" />
     <Compile Include="DictTest.fs" />
     <Compile Include="FileNodeTest.fs" />
+    <Compile Include="SearcherTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
