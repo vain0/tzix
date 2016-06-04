@@ -1,15 +1,16 @@
 ﻿namespace Tzix.Model.Test
 
+open System
 open System.Text.RegularExpressions
+open Chessie.ErrorHandling
 open Persimmon
 open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
+open Tzix.Model.Test.MockFileSystem.TestData
+open Tzix.Model.Test.ImportRuleTest.TestData
 
 module DictTest =
   module TestData =
-    open Tzix.Model.Test.MockFileSystem.TestData
-    open Tzix.Model.Test.ImportRuleTest.TestData
-
     let environment =
       {
         FileSystem      = fsys
@@ -17,7 +18,7 @@ module DictTest =
       }
 
     let emptyDict =
-      Dict.empty
+      Dict.empty environment
 
     let theDict =
       Dict.empty environment |> Dict.import rule
@@ -94,6 +95,29 @@ module DictTest =
       do! dict' |> tryFirst "." |> assertEquals node'
     }
 
+  let tryExecuteSuccessTest =
+    test {
+      let node        = theDict |> tryFirst "Tzix.View" |> Option.get
+      match theDict |> Dict.tryExecute node with
+      | Ok (dict, msgs) ->
+          /// The node's priority should increase.
+          let name'   = dict |> tryFirst "." |> Option.map (fun node -> node.Name)
+          do! name' |> assertEquals (Some node.Name)
+          do! msgs  |> assertEquals []
+      | Bad _ ->
+          do! assertPred false
+    }
+
+  let tryExecuteFailureTest =
+    test {
+      let (dict, node)    = theDict |> addNewNode "D" "nonavailable_file"
+      match dict |> Dict.tryExecute node with
+      | Ok (_, _) ->
+          do! assertPred false
+      | Bad msgs ->
+          do! msgs |> List.map (fun e -> e.Message) |> assertEquals ["File not found"]
+    }
+
   let ``ofSpec and toSpec test`` =
     test {
       let actual      = theDict |> Dict.toSpec |> Dict.ofSpec theDict.Environment
@@ -104,6 +128,50 @@ module DictTest =
     test {
       let actual    = theDict |> Dict.toJson |> Dict.ofJson theDict.Environment
       do! actual |> assertDictEquals theDict
+    }
+
+  let createTextFileForTest text path =
+    let file      = (fsys :> IFileSystem).FileInfo(path)
+    do file.Create()
+    do file.WriteTextAsync(text) |> Async.RunSynchronously
+    let disposer =
+      { new IDisposable with
+          member this.Dispose() = file.Delete()
+      }
+    in (file, disposer)
+
+  let tryLoadAsyncTest =
+    let invalidRuleFile () =
+      "D/~invalid.tzix_import_rules" |> createTextFileForTest "***"
+    let validRuleFile () =
+      "D/~valid.tzix_import_rules" |> createTextFileForTest ruleSource
+    let invalidDictFile () =
+      "D/~invalidDict.json" |> createTextFileForTest "{"
+    let validDictFile () =
+      "D/~validDict.json" |> createTextFileForTest (emptyDict |> Dict.toJson)
+    let body (dictFileGen, ruleFileGen, expected) =
+      test {
+        let (dictFile, dictFileDisposer) = dictFileGen ()
+        let (ruleFile, ruleFileDisposer) = ruleFileGen ()
+        use dictFileDisposer = dictFileDisposer
+        use ruleFileDisposer = ruleFileDisposer
+        let result =
+          Dict.tryLoadAsync theDict.Environment dictFile ruleFile
+          |> Async.RunSynchronously
+        match (result, expected) with
+        | (Ok (actualDict, []), Some expectedDict) ->
+            do! actualDict |> assertDictEquals expectedDict
+        | (Bad _, None) ->
+            do! assertPred true
+        | _ ->
+            do! assertPred false
+      }
+    parameterize {
+      case (invalidDictFile, invalidRuleFile, None)
+      case (  validDictFile, invalidRuleFile, None)
+      case (invalidDictFile,   validRuleFile, Some theDict)
+      case (  validDictFile,   validRuleFile, Some emptyDict)
+      run body
     }
 
   let browseNodeTest =
