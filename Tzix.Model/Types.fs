@@ -8,9 +8,15 @@ open System.Text.RegularExpressions
 module Types =
   type Priority = int
 
+  type Environment =
+    {
+      FileSystem          : IFileSystem
+      Executor            : IExecutor
+    }
+
   type ImportRule =
     {
-      Roots               : list<DirectoryInfo>
+      Roots               : list<IDirectory>
       Exclusions          : list<Regex>
     }
 
@@ -29,6 +35,7 @@ module Types =
       Subfiles            : MultiMap<Id, Id>
       PriorityIndex       : MultiMap<Priority, Id>
       ImportRule          : ImportRule
+      Environment         : Environment
     }
 
   type DictSpec =
@@ -36,3 +43,10 @@ module Types =
       NextId              : Id
       Nodes               : array<FileNode>
     }
+
+  [<RequireQualifiedAccess>]
+  type SearchSource =
+    | All
+    /// 選択しているディレクトリのノードID
+    /// およびそのディレクトリの直下にあるノードのリスト (優先度降順)
+    | Dir         of Id * list<FileNode>

@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>f1573eb7-c646-4a9a-9a9c-25362727d2c8</ProjectGuid>
+    <ProjectGuid>4f2fde95-5237-4904-8044-26c004a57bf6</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Tzix.Model</RootNamespace>
-    <AssemblyName>Tzix.Model</AssemblyName>
+    <RootNamespace>Tzix.ViewModel.Test</RootNamespace>
+    <AssemblyName>Tzix.ViewModel.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Tzix.Model</Name>
+    <Name>Tzix.ViewModel.Test</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +22,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\Tzix.Model.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Tzix.ViewModel.Test.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,35 +31,43 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Tzix.Model.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Tzix.ViewModel.Test.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <Private>True</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="NaiveTrie.fs" />
-    <Compile Include="MultiMap.fs" />
-    <Compile Include="Util.fs" />
-    <Compile Include="FileSystem.fs" />
-    <Compile Include="Executor.fs" />
-    <Compile Include="Types.fs" />
-    <Compile Include="ImportRule.fs" />
-    <Compile Include="FileNode.fs" />
-    <Compile Include="Dict.fs" />
-    <Compile Include="Searcher.fs" />
+    <Compile Include="SearchControlViewModelTest.fs" />
+    <Compile Include="MainWindowViewModelTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
       <Name>Dyxi.Util</Name>
       <Project>{ca0c50ad-aaee-4b54-92f6-962e3e404b65}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Tzix.Model.Test\Tzix.Model.Test.fsproj">
+      <Name>Tzix.Model.Test</Name>
+      <Project>{eb4c8f2a-74c2-4568-a2ac-b56634cbf3ab}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Tzix.Model\Tzix.Model.fsproj">
+      <Name>Tzix.Model</Name>
+      <Project>{f1573eb7-c646-4a9a-9a9c-25362727d2c8}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Tzix.ViewModel\Tzix.ViewModel.fsproj">
+      <Name>Tzix.ViewModel</Name>
+      <Project>{c5092d90-f312-4b82-9bc3-69b3c4b5f18d}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
@@ -138,6 +146,17 @@
         </Reference>
         <Reference Include="FParsecCS">
           <HintPath>..\packages\FParsec\lib\portable-net45+netcore45+wpa81+wp8\FParsecCS.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5' Or $(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2')">
+      <ItemGroup>
+        <Reference Include="Persimmon">
+          <HintPath>..\packages\Persimmon\lib\net20\Persimmon.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>

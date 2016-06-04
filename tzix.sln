@@ -13,6 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{D2E9FCD4-F19
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Dyxi.Util", "paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj", "{CA0C50AD-AAEE-4B54-92F6-962E3E404B65}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{00D40C9A-2DA4-498E-B3BA-F7BB7D846888}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tzix.Model.Test", "Tzix.Model.Test\Tzix.Model.Test.fsproj", "{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tzix.ViewModel.Test", "Tzix.ViewModel.Test\Tzix.ViewModel.Test.fsproj", "{4F2FDE95-5237-4904-8044-26C004A57BF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,11 +41,21 @@ Global
 		{CA0C50AD-AAEE-4B54-92F6-962E3E404B65}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA0C50AD-AAEE-4B54-92F6-962E3E404B65}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA0C50AD-AAEE-4B54-92F6-962E3E404B65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F2FDE95-5237-4904-8044-26C004A57BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F2FDE95-5237-4904-8044-26C004A57BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F2FDE95-5237-4904-8044-26C004A57BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F2FDE95-5237-4904-8044-26C004A57BF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{CA0C50AD-AAEE-4B54-92F6-962E3E404B65} = {D2E9FCD4-F198-44BB-AB26-E65C09EF7774}
+		{EB4C8F2A-74C2-4568-A2AC-B56634CBF3AB} = {00D40C9A-2DA4-498E-B3BA-F7BB7D846888}
+		{4F2FDE95-5237-4904-8044-26C004A57BF6} = {00D40C9A-2DA4-498E-B3BA-F7BB7D846888}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@ open System.IO
 open Dyxi.Util
 
 module FileNode =
-  let internal create (dict: Dict) (name: string) parentIdOpt =
+  let create (dict: Dict) (name: string) parentIdOpt =
     {
       Id              = dict.Counter ()
       ParentId        = parentIdOpt
@@ -13,26 +13,26 @@ module FileNode =
       Priority        = 0
     }
 
-  let excludes rule (file: FileSystemInfo) =
+  let excludes rule (file: IFileBase) =
     [
       rule |> ImportRule.excludes file.Name
       file.Attributes.HasFlag(FileAttributes.Temporary)
     ] |> List.exists id
 
-  let enumSubfiles rule dir =
+  let enumSubfiles rule (dir: IDirectory) =
     let subfiles    =
-      dir |> DirectoryInfo.getAllFilesIfAble
+      dir |> Directory.getAllFilesIfAble
       |> Array.filter (excludes rule >> not)
     let subdirs     =
-      dir |> DirectoryInfo.getAllDirectoriesIfAble
+      dir |> Directory.getAllDirectoriesIfAble
       |> Array.filter (excludes rule >> not)
     in (subfiles, subdirs)
 
-  let internal enumFromDirectory
+  let enumFromDirectory
       (dict: Dict)
-      : option<Id> -> DirectoryInfo -> list<FileNode>
+      : option<Id> -> IDirectory -> list<FileNode>
     =
-    let rec walk acc parentId (dir: DirectoryInfo) =
+    let rec walk acc parentId (dir: IDirectory) =
       let node        = create dict dir.Name parentId
       let nodeId      = Some node.Id
       let (subfiles, subdirs) =
@@ -50,15 +50,16 @@ module FileNode =
   /// Returns None if one of them is excluded.
   let internal enumParents dict dir =
     let parents =
-      dir |> DirectoryInfo.parents
+      dir |> Directory.ancestors
     if parents |> List.exists (excludes dict.ImportRule) then
       None
     else
-      let folder parent (dir: DirectoryInfo) =
+      let folder parent (dir: IDirectory) =
         create dict dir.Name (parent |> Option.map (fun node -> node.Id))
         |> Some
       parents |> List.scan folder None |> List.choose id |> Some
 
+  /// Returns ancestor nodes, including itself.
   let ancestors dict node =
     let rec loop acc node =
       let acc' = node :: acc
