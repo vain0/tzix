@@ -5,33 +5,45 @@ open System.IO
 open Basis.Core
 open Tzix.Model
 
-type MockFile(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
+type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
   let mutable _exists = true
+
+  abstract member Create: unit -> unit
+  default this.Create() =
+    _exists <- true
+
+  abstract member Delete: unit -> unit
+  default this.Delete() =
+    _exists <- false
+
+  abstract member Attributes: FileAttributes
+  default this.Attributes = _attributes
+
+  interface IFileBase with
+    member this.Name        = _name
+    member this.Parent      = _parent
+    member this.Attributes  = this.Attributes
+    member this.Exists      = _exists
+    member this.Create()    = this.Create()
+
+type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
+  inherit MockFileBase(_name, Some _parent, _attributes)
 
   let mutable _content = ""
 
   new (name, parent) =
     MockFile(name, parent, FileAttributes.Normal)
 
-  member internal this.GetAttributes = _attributes
+  override this.Create() =
+    _content <- ""
+    if not (this :> IFile).Exists then
+      this.Create()
 
-  member this.Delete() =
-    _exists <- false
+  override this.Delete() =
+    if (this :> IFile).Exists then
+      this.Delete()
 
   interface IFile with
-    member this.Name = _name
-    
-    member this.Parent = _parent
-
-    member this.Attributes = _attributes
-
-    member this.Exists = _exists
-
-    member this.Create() =
-      _content <- ""
-      if not (this :> IFile).Exists then
-        _exists <- true
-
     member this.ReadTextAsync() = async { return _content }
 
     member this.WriteTextAsync(text) =
@@ -45,7 +57,7 @@ and MockDirectory
   , _subdirs: array<IDirectory>
   , _attributes: FileAttributes
   ) =
-  inherit MockFile(_name, _parent, _attributes)
+  inherit MockFileBase(_name, _parent, _attributes)
 
   let mutable _subfiles = _subfiles
   let mutable _subdirs = _subdirs
@@ -56,12 +68,20 @@ and MockDirectory
   new (name, parent, subfiles, subdirs) =
     MockDirectory(name, parent, subfiles, subdirs, FileAttributes.Normal)
 
+  override this.Create() =
+    if not (this :> IDirectory).Exists then
+      this.Create()
+
+  override this.Delete() =
+    if (this :> IDirectory).Exists then
+      this.Delete()
+
   interface IDirectory with
     member this.GetFiles() = _subfiles
     member this.GetDirectories() = _subdirs
 
     override this.Attributes =
-      this.GetAttributes ||| FileAttributes.Directory
+      this.Attributes ||| FileAttributes.Directory
 
   member this.AddFiles(files) =
     _subfiles <- Array.append _subfiles files
@@ -98,7 +118,7 @@ type MockFileSystem(_roots: array<IDirectory>) =
       match dir |> Directory.tryFindFile name with
       | Some file -> file
       | None ->
-          let file = MockFile(name, Some dir)
+          let file = MockFile(name, dir)
           file.Delete()
           file :> IFile
 
@@ -123,7 +143,7 @@ module Parser =
     parse {
       let! name = fileName
       let! parentOpt = getUserState
-      return (MockFile(name, parentOpt) :> IFile) |> File
+      return (MockFile(name, parentOpt |> Option.get) :> IFile) |> File
     }
 
   let directory =
