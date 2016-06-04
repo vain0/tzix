@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="SearchControlViewModelTest.fs" />
+    <Compile Include="MainWindowViewModelTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\paket-files\vain0\dyxi\Dyxi.Util\Dyxi.Util.fsproj">
