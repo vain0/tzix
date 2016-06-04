@@ -27,6 +27,11 @@ type MockFile(_name: string, _parent: option<IDirectory>, _attributes: FileAttri
 
     member this.Exists = _exists
 
+    member this.Create() =
+      _content <- ""
+      if not (this :> IFile).Exists then
+        _exists <- true
+
     member this.ReadTextAsync() = async { return _content }
 
     member this.WriteTextAsync(text) =

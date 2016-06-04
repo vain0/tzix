@@ -11,6 +11,7 @@ type IFileBase =
   abstract member Parent: option<IDirectory>
   abstract member Attributes: FileAttributes
   abstract member Exists: bool
+  abstract member Create: unit -> unit
 
 and IFile =
   inherit IFileBase
@@ -42,6 +43,9 @@ type DotNetFileInfo(_file: FileInfo) =
 
     member this.Exists = _file.Exists
 
+    member this.Create() =
+      use stream = _file.Create() in ()
+
     member this.ReadTextAsync() =
       async {
         let stream = _file.OpenText()
@@ -71,6 +75,9 @@ and DotNetDirectoryInfo(_dir: DirectoryInfo) =
     member this.Attributes = _dir.Attributes
 
     member this.Exists = _dir.Exists
+
+    member this.Create() =
+      _dir.Create()
 
     member this.GetFiles() =
       _dir.GetFiles()
