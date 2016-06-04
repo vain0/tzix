@@ -47,6 +47,7 @@
     <Compile Include="Util.fs" />
     <Compile Include="MockFileSystem.fs" />
     <Compile Include="FileSystemTest.fs" />
+    <Compile Include="MockExecutor.fs" />
     <Compile Include="ImportRuleTest.fs" />
     <Compile Include="DictTest.fs" />
     <Compile Include="FileNodeTest.fs" />

@@ -35,7 +35,7 @@ module Types =
       Subfiles            : MultiMap<Id, Id>
       PriorityIndex       : MultiMap<Priority, Id>
       ImportRule          : ImportRule
-      FileSystem          : IFileSystem
+      Environment         : Environment
     }
 
   type DictSpec =
