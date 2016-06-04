@@ -9,7 +9,7 @@ module ImportRuleTest =
   open MockFileSystem.TestData
 
   module TestData =
-    let private ruleSource =
+    let ruleSource =
       """
 # includes
 + C
