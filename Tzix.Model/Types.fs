@@ -8,6 +8,12 @@ open System.Text.RegularExpressions
 module Types =
   type Priority = int
 
+  type Environment =
+    {
+      FileSystem          : IFileSystem
+      Executor            : IExecutor
+    }
+
   type ImportRule =
     {
       Roots               : list<IDirectory>
