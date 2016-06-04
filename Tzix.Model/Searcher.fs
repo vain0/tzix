@@ -32,7 +32,6 @@ type Searcher(_dict: Dict) as this =
     async {
       if newSearchText |> Str.isNullOrEmpty then
         _searchSource <- SearchSource.All
-
       let nodes =
         if (newSearchText |> Str.startsWith prevSearchText)
           && (prevSearchText |> Str.isNullOrWhiteSpace |> not)
@@ -41,7 +40,8 @@ type Searcher(_dict: Dict) as this =
           |> Seq.filter (fun item -> item.Name |> Str.contains newSearchText)
         else
           _findNodes newSearchText
-      _setFoundNodes nodes
+      in
+        _setFoundNodes nodes
     }
 
   let _browseDir nodeId =

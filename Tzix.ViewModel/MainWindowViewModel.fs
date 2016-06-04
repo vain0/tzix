@@ -38,21 +38,26 @@ type MainWindowViewModel(_env: Environment, _dictFile: IFile, _importRuleFile: I
     _messageView.IsInProgress <- isInProgress
     this.PageIndex <- PageIndex.MessageView
 
+  member this.TransStateAsync(state) =
+    async {
+      match state with
+      | AppState.Stuck msg ->
+          this.ShowMessage(msg, (* isInProgress = *) false)
+      | AppState.Loading ->
+          match _searchControlOpt with
+          | None ->
+              this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
+              return! this.LoadDictAsync()
+          | Some _ ->
+              return! this.TransStateAsync(AppState.Running)
+      | AppState.Running ->
+          match _searchControlOpt with
+          | None   -> return! this.TransStateAsync(AppState.Loading)
+          | Some _ -> this.PageIndex <- PageIndex.SearchControl
+    }
+
   member this.TransStateTo(state) =
-    match state with
-    | AppState.Stuck msg ->
-        this.ShowMessage(msg, (* isInProgress = *) false)
-    | AppState.Loading ->
-        match _searchControlOpt with
-        | None ->
-            this.ShowMessage("Now loading/creating the dictionary...", (* isInProgress = *) true)
-            this.LoadDictAsync() |> Async.Start
-        | Some _ ->
-            this.TransStateTo(AppState.Running)
-    | AppState.Running ->
-        match _searchControlOpt with
-        | None   -> this.TransStateTo(AppState.Loading)
-        | Some _ -> this.PageIndex <- PageIndex.SearchControl
+    this.TransStateAsync(state) |> Async.Start
 
   member this.LoadDictAsync() =
     async {
@@ -68,7 +73,7 @@ type MainWindowViewModel(_env: Environment, _dictFile: IFile, _importRuleFile: I
               es |> List.map (fun e -> e.Message)
               |> String.concat Environment.NewLine
             in AppState.Stuck msg
-      this.TransStateTo(state)
+      return! this.TransStateAsync(state)
     }
 
   member this.Save() =

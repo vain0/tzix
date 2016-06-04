@@ -23,6 +23,21 @@ module DictTest =
     let theDict =
       Dict.empty environment |> Dict.import rule
 
+    let createTextFile text path =
+      let file      = (fsys :> IFileSystem).FileInfo(path)
+      file.Create()
+      file.WriteTextAsync(text) |> Async.RunSynchronously
+      file
+
+    let invalidRuleFile =
+      "D/~invalid.tzix_import_rules" |> createTextFile "***"
+    let validRuleFile =
+      "D/~valid.tzix_import_rules" |> createTextFile ruleSource
+    let invalidDictFile =
+      "D/~invalidDict.json" |> createTextFile "{"
+    let validDictFile =
+      "D/~validDict.json" |> createTextFile (emptyDict |> Dict.toJson)
+
   open TestData
 
   let tryFirst word dict =
@@ -130,31 +145,9 @@ module DictTest =
       do! actual |> assertDictEquals theDict
     }
 
-  let createTextFileForTest text path =
-    let file      = (fsys :> IFileSystem).FileInfo(path)
-    do file.Create()
-    do file.WriteTextAsync(text) |> Async.RunSynchronously
-    let disposer =
-      { new IDisposable with
-          member this.Dispose() = file.Delete()
-      }
-    in (file, disposer)
-
   let tryLoadAsyncTest =
-    let invalidRuleFile () =
-      "D/~invalid.tzix_import_rules" |> createTextFileForTest "***"
-    let validRuleFile () =
-      "D/~valid.tzix_import_rules" |> createTextFileForTest ruleSource
-    let invalidDictFile () =
-      "D/~invalidDict.json" |> createTextFileForTest "{"
-    let validDictFile () =
-      "D/~validDict.json" |> createTextFileForTest (emptyDict |> Dict.toJson)
-    let body (dictFileGen, ruleFileGen, expected) =
+    let body (dictFile, ruleFile, expected) =
       test {
-        let (dictFile, dictFileDisposer) = dictFileGen ()
-        let (ruleFile, ruleFileDisposer) = ruleFileGen ()
-        use dictFileDisposer = dictFileDisposer
-        use ruleFileDisposer = ruleFileDisposer
         let result =
           Dict.tryLoadAsync theDict.Environment dictFile ruleFile
           |> Async.RunSynchronously
