@@ -104,17 +104,19 @@ module Dict =
     async {
       try
         let! rule     = loadImportRule env.FileSystem importRuleFile
-        let! jsonText = dictFile.ReadTextAsync()
-        let dict      = jsonText |> ofJson env
-        let dict      = { dict with ImportRule = rule }
-        return dict |> pass
-      with | e1 ->
         try
-          let! rule = loadImportRule env.FileSystem importRuleFile
-          let dict = empty env |> import rule
+          let! jsonText = dictFile.ReadTextAsync()
+          let dict      = jsonText |> ofJson env
+          let dict      = { dict with ImportRule = rule }
           return dict |> pass
-        with | e2 ->
-          return Result.Bad [e1; e2]
+        with | e1 ->
+          try
+            let dict = empty env |> import rule
+            return dict |> pass
+          with | e2 ->
+            return Result.Bad [e1; e2]
+      with | e ->
+        return fail e
     }
 
   /// Enumerates nodes whose name contains `word` in priority descending order.
