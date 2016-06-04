@@ -25,6 +25,9 @@ and IDirectory =
   abstract member GetFiles: unit -> IFile []
   abstract member GetDirectories: unit -> IDirectory []
 
+  abstract member AddFiles: array<IFile> -> unit
+  abstract member AddDirectories: array<IDirectory> -> unit
+
 type IFileSystem =
   abstract member FileInfo: string -> IFile
   abstract member DirectoryInfo: string -> IDirectory
@@ -86,6 +89,10 @@ and DotNetDirectoryInfo(_dir: DirectoryInfo) =
     member this.GetDirectories() =
       _dir.GetDirectories()
       |> Array.map (fun dir -> DotNetDirectoryInfo(dir) :> IDirectory)
+
+    member this.AddFiles(files) = ()
+
+    member this.AddDirectories(dirs) = ()
 
 type DotNetFileSystem private() =
   static member val private LazyInstance = lazy DotNetFileSystem()

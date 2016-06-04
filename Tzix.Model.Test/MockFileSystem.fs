@@ -83,11 +83,11 @@ and MockDirectory
     override this.Attributes =
       this.Attributes ||| FileAttributes.Directory
 
-  member this.AddFiles(files) =
-    _subfiles <- Array.append _subfiles files
+    member this.AddFiles(files) =
+      _subfiles <- Array.append _subfiles files
 
-  member this.AddDirectories(dirs) =
-    _subdirs <- Array.append _subdirs dirs
+    member this.AddDirectories(dirs) =
+      _subdirs <- Array.append _subdirs dirs
 
 type MockFileSystem(_roots: array<IDirectory>) =
   interface IFileSystem with
@@ -151,8 +151,8 @@ module Parser =
       let! name = fileName
       let! parentOpt = getUserState
       do! spaces >>. skipChar '{' .>> spaces
-      let dir = MockDirectory(name, parentOpt)
-      do! setUserState (Some (dir :> IDirectory))
+      let dir = MockDirectory(name, parentOpt) :> IDirectory
+      do! setUserState (Some dir)
       let! (subfiles, subdirs) = fileList
       do! spaces >>. skipChar '}'
       do! setUserState parentOpt
