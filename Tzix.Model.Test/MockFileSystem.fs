@@ -52,11 +52,16 @@ type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
       if (this :> IFile).Exists then
         this.Delete()
 
-    member this.ReadTextAsync() = async { return _content }
+    member this.ReadTextAsync() =
+      if (this :> IFile).Exists
+      then async { return _content }
+      else raise (FileNotFoundException())
 
     member this.WriteTextAsync(text) =
-       do _content <- text
-       async { return () }
+      if (this :> IFile).Exists then
+        do _content <- text
+        async { return () }
+      else raise (FileNotFoundException())
 
 and MockDirectory
   ( _name: string
