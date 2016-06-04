@@ -8,7 +8,7 @@ open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 open Tzix.Model
 
-type MainWindowViewModel(_dictFile: IFile, _importRuleFile: IFile, _dispatcher: IDispatcher) =
+type MainWindowViewModel(_env: Environment, _dictFile: IFile, _importRuleFile: IFile, _dispatcher: IDispatcher) =
   inherit ViewModel.Base()
 
   let mutable _pageIndex = PageIndex.MessageView
@@ -17,10 +17,15 @@ type MainWindowViewModel(_dictFile: IFile, _importRuleFile: IFile, _dispatcher: 
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
 
   new (dispatcher: IDispatcher) =
-    let fsys = DotNetFileSystem.Instance :> IFileSystem
+    let env =
+      {
+        FileSystem  = DotNetFileSystem.Instance
+        Executor    = DotNetExecutor.Instance
+      }
+    let fsys = env.FileSystem
     let dictFile = fsys.FileInfo(@"tzix.json")
     let importRuleFile = fsys.FileInfo(@".tzix_import_rules")
-    in MainWindowViewModel(dictFile, importRuleFile, dispatcher)
+    in MainWindowViewModel(env, dictFile, importRuleFile, dispatcher)
 
   member this.PageIndex
     with get () = _pageIndex
@@ -51,7 +56,7 @@ type MainWindowViewModel(_dictFile: IFile, _importRuleFile: IFile, _dispatcher: 
 
   member this.LoadDictAsync() =
     async {
-      let! result = Dict.tryLoadAsync _dictFile _importRuleFile
+      let! result = Dict.tryLoadAsync _env _dictFile _importRuleFile
       let state =
         match result with
         | Pass dict
