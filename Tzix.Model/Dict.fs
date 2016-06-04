@@ -8,14 +8,14 @@ open Chessie.ErrorHandling
 open Dyxi.Util
 
 module Dict =
-  let empty fsys =
+  let empty env =
     {
       Counter             = createCounter 0L
       FileNodes           = Map.empty
       Subfiles            = MultiMap.empty
       PriorityIndex       = MultiMap.empty
       ImportRule          = ImportRule.empty
-      FileSystem          = fsys
+      Environment         = env
     }
 
   let findNode nodeId (dict: Dict) =
@@ -71,7 +71,7 @@ module Dict =
   let tryExecute node dict =
     let path          = node |> FileNode.fullPath dict
     try
-      Process.Start(path) |> ignore
+      dict.Environment.Executor.Execute(dict.Environment.FileSystem, path)
       dict |> incrementPriority node |> pass
     with
     | e -> fail e
@@ -82,40 +82,41 @@ module Dict =
       Nodes           = dict.FileNodes |> Map.values |> Seq.toArray
     }
 
-  let ofSpec fsys (spec: DictSpec) =
-    let dict = empty fsys |> addNodes spec.Nodes
+  let ofSpec env (spec: DictSpec) =
+    let dict = empty env |> addNodes spec.Nodes
     in { dict with Counter = createCounter spec.NextId }
 
   let toJson dict =
     dict |> toSpec |> Serialize.Json.serialize<DictSpec>
 
-  let ofJson fsys (json: string) =
-    json |> Serialize.Json.deserialize<DictSpec> |> ofSpec fsys
+  let ofJson env (json: string) =
+    json |> Serialize.Json.deserialize<DictSpec> |> ofSpec env
 
-  let loadImportRule fsys file =
+  let loadImportRule fsys (file: IFile) =
     async {
-      let! text = file |> FileInfo.readTextAsync
+      let! text = file.ReadTextAsync()
       return ImportRule.parse fsys file.Name text
     }
 
   /// Tries to load dictionary from `dictFile`.
   /// If it fails, creates new dictionary based on the rule written in `importRuleFile`.
-  let tryLoadAsync (dictFile: FileInfo) (importRuleFile: FileInfo) =
+  let tryLoadAsync (env: Environment) (dictFile: IFile) (importRuleFile: IFile) =
     async {
-      let fsys = DotNetFileSystem.Instance
       try
-        let! rule     = loadImportRule fsys importRuleFile
-        let! jsonText = dictFile |> FileInfo.readTextAsync
-        let dict      = jsonText |> ofJson fsys
-        let dict      = { dict with ImportRule = rule }
-        return dict |> pass
-      with | e1 ->
+        let! rule     = loadImportRule env.FileSystem importRuleFile
         try
-          let! rule = loadImportRule fsys importRuleFile
-          let dict = empty fsys |> import rule
+          let! jsonText = dictFile.ReadTextAsync()
+          let dict      = jsonText |> ofJson env
+          let dict      = { dict with ImportRule = rule }
           return dict |> pass
-        with | e2 ->
-          return Result.Bad [e1; e2]
+        with | e1 ->
+          try
+            let dict = empty env |> import rule
+            return dict |> pass
+          with | e2 ->
+            return Result.Bad [e1; e2]
+      with | e ->
+        return fail e
     }
 
   /// Enumerates nodes whose name contains `word` in priority descending order.
@@ -143,7 +144,7 @@ module Dict =
   let browseNode nodeId dict =
     let node = dict |> findNode nodeId
     let dir =
-      dict.FileSystem.DirectoryInfo(node |> FileNode.fullPath dict)
+      dict.Environment.FileSystem.DirectoryInfo(node |> FileNode.fullPath dict)
     /// Subfiles and subdirs actually exist inside the directory.
     let (subfiles, subdirs) =
       dir |> FileNode.enumSubfiles dict.ImportRule
@@ -160,8 +161,8 @@ module Dict =
     /// by pair annihilation between actual files and corresponding node id's.
     let (unknownSubnodes, unknownSubfiles) =
       Seq.append
-        (subfiles |> Seq.cast<IFile>)
-        (subdirs |> Seq.cast<IFile>)
+        (subfiles |> Seq.cast<IFileBase>)
+        (subdirs |> Seq.cast<IFileBase>)
       |> Seq.fold (fun (uns, ufs) file ->
           match uns |> Map.tryFind file.Name with
           | Some nodeId ->

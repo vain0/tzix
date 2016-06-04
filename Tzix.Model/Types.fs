@@ -8,6 +8,12 @@ open System.Text.RegularExpressions
 module Types =
   type Priority = int
 
+  type Environment =
+    {
+      FileSystem          : IFileSystem
+      Executor            : IExecutor
+    }
+
   type ImportRule =
     {
       Roots               : list<IDirectory>
@@ -29,7 +35,7 @@ module Types =
       Subfiles            : MultiMap<Id, Id>
       PriorityIndex       : MultiMap<Priority, Id>
       ImportRule          : ImportRule
-      FileSystem          : IFileSystem
+      Environment         : Environment
     }
 
   type DictSpec =

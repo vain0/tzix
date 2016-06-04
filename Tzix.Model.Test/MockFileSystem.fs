@@ -3,61 +3,110 @@
 open System
 open System.IO
 open Basis.Core
-open Persimmon
-open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
-open Tzix.Model.Test
 
-type MockFile(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
+type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
+  let _deletedEvent = Event<_, _>()
+
   let mutable _exists = true
+
+  abstract member Create: unit -> unit
+  default this.Create() =
+    _exists <- true
+
+  abstract member Delete: unit -> unit
+  default this.Delete() =
+    _exists <- false
+    _deletedEvent.Trigger(this, null)
+
+  abstract member Attributes: FileAttributes
+  default this.Attributes = _attributes
+
+  interface IFileBase with
+    member this.Name        = _name
+    member this.Parent      = _parent
+    member this.Attributes  = this.Attributes
+    member this.Exists      = _exists
+    member this.Create()    = this.Create()
+    member this.Delete()    = this.Delete()
+
+    [<CLIEvent>]
+    member this.Deleted     = _deletedEvent.Publish
+
+type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
+  inherit MockFileBase(_name, Some _parent, _attributes)
+
+  let mutable _content = ""
 
   new (name, parent) =
     MockFile(name, parent, FileAttributes.Normal)
 
-  member internal this.GetAttributes = _attributes
-
-  member this.Delete() =
-    _exists <- false
-
   interface IFile with
-    member this.Name = _name
-    
-    member this.Parent = _parent
+    override this.Create() =
+      _content <- ""
+      if not (this :> IFile).Exists then
+        this.Create()
+        _parent.AddFiles([|this :> IFile|])
 
-    member this.Attributes = _attributes
+    override this.Delete() =
+      if (this :> IFile).Exists then
+        this.Delete()
 
-    member this.Exists = _exists
+    member this.ReadTextAsync() =
+      if (this :> IFile).Exists
+      then async { return _content }
+      else raise (FileNotFoundException())
+
+    member this.WriteTextAsync(text) =
+      if (this :> IFile).Exists then
+        do _content <- text
+        async { return () }
+      else raise (FileNotFoundException())
 
 and MockDirectory
   ( _name: string
   , _parent: option<IDirectory>
-  , _subfiles: array<IFile>
-  , _subdirs: array<IDirectory>
   , _attributes: FileAttributes
   ) =
-  inherit MockFile(_name, _parent, _attributes)
+  inherit MockFileBase(_name, _parent, _attributes)
 
-  let mutable _subfiles = _subfiles
-  let mutable _subdirs = _subdirs
+  let mutable _subfiles = [||]
+  let mutable _subdirs = [||]
 
   new (name, parent) =
-    MockDirectory(name, parent, [||], [||])
-
-  new (name, parent, subfiles, subdirs) =
-    MockDirectory(name, parent, subfiles, subdirs, FileAttributes.Normal)
+    MockDirectory(name, parent, FileAttributes.Directory)
 
   interface IDirectory with
     member this.GetFiles() = _subfiles
     member this.GetDirectories() = _subdirs
 
     override this.Attributes =
-      this.GetAttributes ||| FileAttributes.Directory
+      this.Attributes ||| FileAttributes.Directory
 
-  member this.AddFiles(files) =
-    _subfiles <- Array.append _subfiles files
+    override this.Create() =
+      if not (this :> IDirectory).Exists then
+        this.Create()
+        _parent |> Option.iter (fun parent ->
+          parent.AddDirectories([|this :> IDirectory|])
+          )
 
-  member this.AddDirectories(dirs) =
-    _subdirs <- Array.append _subdirs dirs
+    override this.Delete() =
+      if (this :> IDirectory).Exists then
+        this.Delete()
+
+    member this.AddFiles(files) =
+      _subfiles <- Array.append _subfiles files
+      files |> Array.iter (fun file ->
+        file.Deleted.Add(fun _ ->
+          _subfiles <- _subfiles |> Array.filter (fun f -> f.Name <> file.Name)
+        ))
+
+    member this.AddDirectories(dirs) =
+      _subdirs <- Array.append _subdirs dirs
+      dirs |> Array.iter (fun dir ->
+        dir.Deleted.Add(fun _ ->
+          _subdirs <- _subdirs |> Array.filter (fun d -> d.Name <> dir.Name)
+        ))
 
 type MockFileSystem(_roots: array<IDirectory>) =
   interface IFileSystem with
@@ -88,7 +137,7 @@ type MockFileSystem(_roots: array<IDirectory>) =
       match dir |> Directory.tryFindFile name with
       | Some file -> file
       | None ->
-          let file = MockFile(name, Some dir)
+          let file = MockFile(name, dir)
           file.Delete()
           file :> IFile
 
@@ -113,7 +162,7 @@ module Parser =
     parse {
       let! name = fileName
       let! parentOpt = getUserState
-      return (MockFile(name, parentOpt) :> IFile) |> File
+      return (MockFile(name, parentOpt |> Option.get) :> IFile) |> File
     }
 
   let directory =
@@ -121,8 +170,8 @@ module Parser =
       let! name = fileName
       let! parentOpt = getUserState
       do! spaces >>. skipChar '{' .>> spaces
-      let dir = MockDirectory(name, parentOpt)
-      do! setUserState (Some (dir :> IDirectory))
+      let dir = MockDirectory(name, parentOpt) :> IDirectory
+      do! setUserState (Some dir)
       let! (subfiles, subdirs) = fileList
       do! spaces >>. skipChar '}'
       do! setUserState parentOpt
@@ -153,65 +202,3 @@ module Parser =
         fsys
     | Failure (msg, _, _) ->
         failwith msg
-
-module TestData =
-  /// This data is used all over Tzix.Model.Test.
-  let private fsysSource =
-    """
-      C { user { .gitconfig } }
-      D {
-        .git {
-          config
-          HEAD
-        }
-        repo {
-          tzix {
-            Tzix.Model {}
-            Tzix.View {
-              bin { Debug { tzix.exe ~x } }
-            }
-          }
-        }
-        todo.txt
-      }
-    """
-
-  let fsys =
-    fsysSource |> Parser.parse "testData"
-
-  let (./) (dir: IDirectory) (name: string) =
-    dir |> Directory.tryFindDirectory name |> Option.get
-
-  let (/.) (dir: IDirectory) (name: string) =
-    dir |> Directory.tryFindFile name |> Option.get
-
-  module FileSystem =
-    let c = fsys.Roots |> Array.find (fun dir -> dir.Name = "C")
-    let d = fsys.Roots |> Array.find (fun dir -> dir.Name = "D")
-
-module MockFileSystemTest =
-  open TestData
-
-  let parseTest = test {
-    do! fsys.Roots |> Array.map (fun dir -> dir.Name) |> assertEquals [|"C"; "D"|]
-  }
-
-module FileSystemTest =
-  open TestData
-
-  let ancestorsTest =
-    let f dir =
-      dir |> Directory.ancestors
-      |> List.map (fun dir -> dir.Name)
-      |> List.toArray
-      |> Path.Combine
-    parameterize {
-      case (FileSystem.d ./ "repo" ./ "tzix", Path.Combine("D", "repo"))
-      run (f |> Persimmon.functionResultEqualityTest)
-    }
-
-  let fullNameTest =
-    test {
-      let file = FileSystem.d /. "todo.txt"
-      do! (file |> File.fullName) |> assertEquals (Path.Combine("D", "todo.txt"))
-    }

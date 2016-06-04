@@ -12,13 +12,14 @@ open Tzix.Model.Test.DictTest.TestData
 
 module FileNodeTest =
   let excludesTest =
+    let dir = fsys.Roots.[0]
     parameterize {
-      case (MockFile("normal_file.txt", None) :> IFile, false)
-      case (MockFile(".gitignore", None) :> IFile, true)
-      case (MockFile("~tmp", None) :> IFile, true)
-      case (MockDirectory(".git", None) :> IFile, true)
-      case (MockFile("hidden_file", None, FileAttributes.Hidden) :> IFile, false)
-      case (MockFile("t_file", None, FileAttributes.Temporary) :> IFile, true)
+      case (MockFile("normal_file.txt", dir) :> IFileBase, false)
+      case (MockFile(".gitignore", dir) :> IFileBase, true)
+      case (MockFile("~tmp", dir) :> IFileBase, true)
+      case (MockDirectory(".git", None) :> IFileBase, true)
+      case (MockFile("hidden_file", dir, FileAttributes.Hidden) :> IFileBase, false)
+      case (MockFile("t_file", dir, FileAttributes.Temporary) :> IFileBase, true)
       run (FileNode.excludes rule |> Persimmon.functionResultEqualityTest)
     }
 

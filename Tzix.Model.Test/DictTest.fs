@@ -10,11 +10,17 @@ module DictTest =
     open Tzix.Model.Test.MockFileSystem.TestData
     open Tzix.Model.Test.ImportRuleTest.TestData
 
+    let environment =
+      {
+        FileSystem      = fsys
+        Executor        = MockExecutor()
+      }
+
     let emptyDict =
       Dict.empty
 
     let theDict =
-      Dict.empty fsys |> Dict.import rule
+      Dict.empty environment |> Dict.import rule
 
   open TestData
 
@@ -90,13 +96,13 @@ module DictTest =
 
   let ``ofSpec and toSpec test`` =
     test {
-      let actual      = theDict |> Dict.toSpec |> Dict.ofSpec theDict.FileSystem
+      let actual      = theDict |> Dict.toSpec |> Dict.ofSpec theDict.Environment
       do! actual |> assertDictEquals theDict
     }
 
   let ``ofJson and toJson test`` =
     test {
-      let actual    = theDict |> Dict.toJson |> Dict.ofJson theDict.FileSystem
+      let actual    = theDict |> Dict.toJson |> Dict.ofJson theDict.Environment
       do! actual |> assertDictEquals theDict
     }
 

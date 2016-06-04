@@ -13,7 +13,7 @@ module FileNode =
       Priority        = 0
     }
 
-  let excludes rule (file: IFile) =
+  let excludes rule (file: IFileBase) =
     [
       rule |> ImportRule.excludes file.Name
       file.Attributes.HasFlag(FileAttributes.Temporary)

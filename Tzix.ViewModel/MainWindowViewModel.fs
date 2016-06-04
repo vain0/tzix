@@ -8,16 +8,24 @@ open Chessie.ErrorHandling
 open Dyxi.Util.Wpf
 open Tzix.Model
 
-type MainWindowViewModel(_dispatcher: Dispatcher) =
+type MainWindowViewModel(_env: Environment, _dictFile: IFile, _importRuleFile: IFile, _dispatcher: IDispatcher) =
   inherit ViewModel.Base()
 
   let mutable _pageIndex = PageIndex.MessageView
 
-  let dictFile = FileInfo(@"tzix.json")
-  let importRuleFile = FileInfo(@".tzix_import_rules")
-
   let _messageView = MessageViewViewModel()
   let mutable _searchControlOpt = (None: option<SearchControlViewModel>)
+
+  new (dispatcher: IDispatcher) =
+    let env =
+      {
+        FileSystem  = DotNetFileSystem.Instance
+        Executor    = DotNetExecutor.Instance
+      }
+    let fsys = env.FileSystem
+    let dictFile = fsys.FileInfo(@"tzix.json")
+    let importRuleFile = fsys.FileInfo(@".tzix_import_rules")
+    in MainWindowViewModel(env, dictFile, importRuleFile, dispatcher)
 
   member this.PageIndex
     with get () = _pageIndex
@@ -48,7 +56,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
 
   member this.LoadDictAsync() =
     async {
-      let! result = Dict.tryLoadAsync dictFile importRuleFile
+      let! result = Dict.tryLoadAsync _env _dictFile _importRuleFile
       let state =
         match result with
         | Pass dict
@@ -66,7 +74,7 @@ type MainWindowViewModel(_dispatcher: Dispatcher) =
   member this.Save() =
     _searchControlOpt |> Option.iter (fun searchControl ->
       try
-        File.WriteAllText(dictFile.FullName, searchControl.Dict |> Dict.toJson)
+        _dictFile.WriteTextAsync(searchControl.Dict |> Dict.toJson) |> Async.RunSynchronously
       with | _ ->
         ()
       )
