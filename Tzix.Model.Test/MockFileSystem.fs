@@ -6,6 +6,8 @@ open Basis.Core
 open Tzix.Model
 
 type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
+  let _deletedEvent = Event<_, _>()
+
   let mutable _exists = true
 
   abstract member Create: unit -> unit
@@ -15,6 +17,7 @@ type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileA
   abstract member Delete: unit -> unit
   default this.Delete() =
     _exists <- false
+    _deletedEvent.Trigger(this, null)
 
   abstract member Attributes: FileAttributes
   default this.Attributes = _attributes
@@ -26,6 +29,9 @@ type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileA
     member this.Exists      = _exists
     member this.Create()    = this.Create()
     member this.Delete()    = this.Delete()
+
+    [<CLIEvent>]
+    member this.Deleted     = _deletedEvent.Publish
 
 type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
   inherit MockFileBase(_name, Some _parent, _attributes)
@@ -54,20 +60,15 @@ type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
 and MockDirectory
   ( _name: string
   , _parent: option<IDirectory>
-  , _subfiles: array<IFile>
-  , _subdirs: array<IDirectory>
   , _attributes: FileAttributes
   ) =
   inherit MockFileBase(_name, _parent, _attributes)
 
-  let mutable _subfiles = _subfiles
-  let mutable _subdirs = _subdirs
+  let mutable _subfiles = [||]
+  let mutable _subdirs = [||]
 
   new (name, parent) =
-    MockDirectory(name, parent, [||], [||])
-
-  new (name, parent, subfiles, subdirs) =
-    MockDirectory(name, parent, subfiles, subdirs, FileAttributes.Normal)
+    MockDirectory(name, parent, FileAttributes.Directory)
 
   interface IDirectory with
     member this.GetFiles() = _subfiles
@@ -86,9 +87,17 @@ and MockDirectory
 
     member this.AddFiles(files) =
       _subfiles <- Array.append _subfiles files
+      files |> Array.iter (fun file ->
+        file.Deleted.Add(fun _ ->
+          _subfiles <- _subfiles |> Array.filter (fun f -> f.Name <> file.Name)
+        ))
 
     member this.AddDirectories(dirs) =
       _subdirs <- Array.append _subdirs dirs
+      dirs |> Array.iter (fun dir ->
+        dir.Deleted.Add(fun _ ->
+          _subdirs <- _subdirs |> Array.filter (fun d -> d.Name <> dir.Name)
+        ))
 
 type MockFileSystem(_roots: array<IDirectory>) =
   interface IFileSystem with

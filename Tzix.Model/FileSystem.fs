@@ -1,6 +1,7 @@
 ﻿[<AutoOpen>]
 module Tzix.Model.FileSystem
 
+open System
 open System.IO
 open System.Text
 open System.Threading.Tasks
@@ -13,6 +14,9 @@ type IFileBase =
   abstract member Exists: bool
   abstract member Create: unit -> unit
   abstract member Delete: unit -> unit
+
+  [<CLIEvent>]
+  abstract member Deleted: IEvent<EventHandler, EventArgs>
 
 and IFile =
   inherit IFileBase
@@ -34,6 +38,8 @@ type IFileSystem =
   abstract member DirectoryInfo: string -> IDirectory
 
 type DotNetFileInfo(_file: FileInfo) =
+  let _deletedEvent = Event<_, _>()
+
   new (path: string) =
     DotNetFileInfo(FileInfo(path))
 
@@ -52,6 +58,10 @@ type DotNetFileInfo(_file: FileInfo) =
 
     member this.Delete() =
       _file.Delete()
+      _deletedEvent.Trigger(this, null)
+
+    [<CLIEvent>]
+    member this.Deleted = _deletedEvent.Publish
 
     member this.ReadTextAsync() =
       async {
@@ -69,6 +79,8 @@ type DotNetFileInfo(_file: FileInfo) =
       }
 
 and DotNetDirectoryInfo(_dir: DirectoryInfo) =
+  let _deletedEvent = Event<_, _>()
+
   new (path: string) =
     DotNetDirectoryInfo(DirectoryInfo(path))
 
@@ -85,9 +97,13 @@ and DotNetDirectoryInfo(_dir: DirectoryInfo) =
 
     member this.Delete() =
       _dir.Delete()
+      _deletedEvent.Trigger(this, null)
 
     member this.Create() =
       _dir.Create()
+
+    [<CLIEvent>]
+    member this.Deleted = _deletedEvent.Publish
 
     member this.GetFiles() =
       _dir.GetFiles()
