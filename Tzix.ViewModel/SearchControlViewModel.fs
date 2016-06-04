@@ -99,3 +99,5 @@ type SearchControlViewModel(_dict: Dict) as this =
   member this.BrowseGrandparentDirCommand = _browseGrandparentDirCommand
 
   member this.Dict = _dict ()
+
+  member this.Searcher = _searcher
