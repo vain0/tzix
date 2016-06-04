@@ -46,6 +46,7 @@ type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
       _content <- ""
       if not (this :> IFile).Exists then
         this.Create()
+        _parent.AddFiles([|this :> IFile|])
 
     override this.Delete() =
       if (this :> IFile).Exists then
@@ -80,6 +81,9 @@ and MockDirectory
     override this.Create() =
       if not (this :> IDirectory).Exists then
         this.Create()
+        _parent |> Option.iter (fun parent ->
+          parent.AddDirectories([|this :> IDirectory|])
+          )
 
     override this.Delete() =
       if (this :> IDirectory).Exists then
