@@ -25,6 +25,7 @@ type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileA
     member this.Attributes  = this.Attributes
     member this.Exists      = _exists
     member this.Create()    = this.Create()
+    member this.Delete()    = this.Delete()
 
 type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
   inherit MockFileBase(_name, Some _parent, _attributes)
@@ -34,16 +35,16 @@ type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
   new (name, parent) =
     MockFile(name, parent, FileAttributes.Normal)
 
-  override this.Create() =
-    _content <- ""
-    if not (this :> IFile).Exists then
-      this.Create()
-
-  override this.Delete() =
-    if (this :> IFile).Exists then
-      this.Delete()
-
   interface IFile with
+    override this.Create() =
+      _content <- ""
+      if not (this :> IFile).Exists then
+        this.Create()
+
+    override this.Delete() =
+      if (this :> IFile).Exists then
+        this.Delete()
+
     member this.ReadTextAsync() = async { return _content }
 
     member this.WriteTextAsync(text) =
@@ -68,20 +69,20 @@ and MockDirectory
   new (name, parent, subfiles, subdirs) =
     MockDirectory(name, parent, subfiles, subdirs, FileAttributes.Normal)
 
-  override this.Create() =
-    if not (this :> IDirectory).Exists then
-      this.Create()
-
-  override this.Delete() =
-    if (this :> IDirectory).Exists then
-      this.Delete()
-
   interface IDirectory with
     member this.GetFiles() = _subfiles
     member this.GetDirectories() = _subdirs
 
     override this.Attributes =
       this.Attributes ||| FileAttributes.Directory
+
+    override this.Create() =
+      if not (this :> IDirectory).Exists then
+        this.Create()
+
+    override this.Delete() =
+      if (this :> IDirectory).Exists then
+        this.Delete()
 
     member this.AddFiles(files) =
       _subfiles <- Array.append _subfiles files
