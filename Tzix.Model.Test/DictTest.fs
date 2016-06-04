@@ -1,6 +1,7 @@
 ﻿namespace Tzix.Model.Test
 
 open System.Text.RegularExpressions
+open Chessie.ErrorHandling
 open Persimmon
 open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
@@ -92,6 +93,29 @@ module DictTest =
       do! node' |> Option.map (fun node -> node.Priority) |> assertEquals (Some 1)
       // Nodes with high priority are priorized listing.
       do! dict' |> tryFirst "." |> assertEquals node'
+    }
+
+  let tryExecuteSuccessTest =
+    test {
+      let node        = theDict |> tryFirst "Tzix.View" |> Option.get
+      match theDict |> Dict.tryExecute node with
+      | Ok (dict, msgs) ->
+          /// The node's priority should increase.
+          let name'   = dict |> tryFirst "." |> Option.map (fun node -> node.Name)
+          do! name' |> assertEquals (Some node.Name)
+          do! msgs  |> assertEquals []
+      | Bad _ ->
+          do! assertPred false
+    }
+
+  let tryExecuteFailureTest =
+    test {
+      let (dict, node)    = theDict |> addNewNode "D" "nonavailable_file"
+      match dict |> Dict.tryExecute node with
+      | Ok (_, _) ->
+          do! assertPred false
+      | Bad msgs ->
+          do! msgs |> List.map (fun e -> e.Message) |> assertEquals ["File not found"]
     }
 
   let ``ofSpec and toSpec test`` =
