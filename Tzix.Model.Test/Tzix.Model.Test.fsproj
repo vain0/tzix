@@ -45,7 +45,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Util.fs" />
-    <Compile Include="MockFileSystem.fs" />
+    <Compile Include="MemoryFileSystem.fs" />
     <Compile Include="FileSystemTest.fs" />
     <Compile Include="MockExecutor.fs" />
     <Compile Include="ImportRuleTest.fs" />

@@ -4,8 +4,8 @@ open System.IO
 open Persimmon
 open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
-open Tzix.Model.Test.MockFileSystem
-open Tzix.Model.Test.MockFileSystem.TestData
+open Tzix.Model.Test.MemoryFileSystem
+open Tzix.Model.Test.MemoryFileSystem.TestData
 open Tzix.Model.Test.ImportRuleTest.TestData
 open Tzix.Model.Test.DictTest
 open Tzix.Model.Test.DictTest.TestData
@@ -14,12 +14,12 @@ module FileNodeTest =
   let excludesTest =
     let dir = fsys.Roots.[0]
     parameterize {
-      case (MockFile("normal_file.txt", dir) :> IFileBase, false)
-      case (MockFile(".gitignore", dir) :> IFileBase, true)
-      case (MockFile("~tmp", dir) :> IFileBase, true)
-      case (MockDirectory(".git", None) :> IFileBase, true)
-      case (MockFile("hidden_file", dir, FileAttributes.Hidden) :> IFileBase, false)
-      case (MockFile("t_file", dir, FileAttributes.Temporary) :> IFileBase, true)
+      case (MemoryFile("normal_file.txt", dir) :> IFileBase, false)
+      case (MemoryFile(".gitignore", dir) :> IFileBase, true)
+      case (MemoryFile("~tmp", dir) :> IFileBase, true)
+      case (MemoryDirectory(".git", None) :> IFileBase, true)
+      case (MemoryFile("hidden_file", dir, FileAttributes.Hidden) :> IFileBase, false)
+      case (MemoryFile("t_file", dir, FileAttributes.Temporary) :> IFileBase, true)
       run (FileNode.excludes rule |> Persimmon.functionResultEqualityTest)
     }
 

@@ -5,7 +5,7 @@ open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
 open Tzix.Model.Test.DictTest
 open Tzix.Model.Test.DictTest.TestData
-open Tzix.Model.Test.MockFileSystem.TestData
+open Tzix.Model.Test.MemoryFileSystem.TestData
 open Tzix.ViewModel
 
 module SearchControlViewModelTest =

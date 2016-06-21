@@ -6,7 +6,7 @@ open Chessie.ErrorHandling
 open Persimmon
 open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
-open Tzix.Model.Test.MockFileSystem.TestData
+open Tzix.Model.Test.MemoryFileSystem.TestData
 open Tzix.Model.Test.ImportRuleTest.TestData
 
 module DictTest =

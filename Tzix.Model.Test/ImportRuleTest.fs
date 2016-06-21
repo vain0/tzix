@@ -6,7 +6,7 @@ open Persimmon.Syntax.UseTestNameByReflection
 open Tzix.Model
 
 module ImportRuleTest =
-  open MockFileSystem.TestData
+  open MemoryFileSystem.TestData
 
   module TestData =
     let ruleSource =

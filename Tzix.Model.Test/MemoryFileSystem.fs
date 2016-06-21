@@ -1,11 +1,11 @@
-﻿namespace Tzix.Model.Test.MockFileSystem
+﻿namespace Tzix.Model.Test.MemoryFileSystem
 
 open System
 open System.IO
 open Basis.Core
 open Tzix.Model
 
-type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
+type MemoryFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileAttributes) =
   let _deletedEvent = Event<_, _>()
 
   let mutable _exists = true
@@ -33,13 +33,13 @@ type MockFileBase(_name: string, _parent: option<IDirectory>, _attributes: FileA
     [<CLIEvent>]
     member this.Deleted     = _deletedEvent.Publish
 
-type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
-  inherit MockFileBase(_name, Some _parent, _attributes)
+type MemoryFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
+  inherit MemoryFileBase(_name, Some _parent, _attributes)
 
   let mutable _content = ""
 
   new (name, parent) =
-    MockFile(name, parent, FileAttributes.Normal)
+    MemoryFile(name, parent, FileAttributes.Normal)
 
   interface IFile with
     override this.Create() =
@@ -63,18 +63,18 @@ type MockFile(_name: string, _parent: IDirectory, _attributes: FileAttributes) =
         async { return () }
       else raise (FileNotFoundException())
 
-and MockDirectory
+and MemoryDirectory
   ( _name: string
   , _parent: option<IDirectory>
   , _attributes: FileAttributes
   ) =
-  inherit MockFileBase(_name, _parent, _attributes)
+  inherit MemoryFileBase(_name, _parent, _attributes)
 
   let mutable _subfiles = [||]
   let mutable _subdirs = [||]
 
   new (name, parent) =
-    MockDirectory(name, parent, FileAttributes.Directory)
+    MemoryDirectory(name, parent, FileAttributes.Directory)
 
   interface IDirectory with
     member this.GetFiles() = _subfiles
@@ -108,7 +108,7 @@ and MockDirectory
           _subdirs <- _subdirs |> Array.filter (fun d -> d.Name <> dir.Name)
         ))
 
-type MockFileSystem(_roots: array<IDirectory>) =
+type MemoryFileSystem(_roots: array<IDirectory>) =
   interface IFileSystem with
     /// Example: @"R\path\to\dir"
     member this.DirectoryInfo(path) =
@@ -120,7 +120,7 @@ type MockFileSystem(_roots: array<IDirectory>) =
             let dir =
               dir |> Directory.tryFindDirectory name
               |> Option.getOrElse (fun () ->
-                  let dir = MockDirectory(name, Some dir)
+                  let dir = MemoryDirectory(name, Some dir)
                   dir.Delete()
                   dir :> IDirectory
                   )
@@ -137,7 +137,7 @@ type MockFileSystem(_roots: array<IDirectory>) =
       match dir |> Directory.tryFindFile name with
       | Some file -> file
       | None ->
-          let file = MockFile(name, dir)
+          let file = MemoryFile(name, dir)
           file.Delete()
           file :> IFile
 
@@ -162,7 +162,7 @@ module Parser =
     parse {
       let! name = fileName
       let! parentOpt = getUserState
-      return (MockFile(name, parentOpt |> Option.get) :> IFile) |> File
+      return (MemoryFile(name, parentOpt |> Option.get) :> IFile) |> File
     }
 
   let directory =
@@ -170,7 +170,7 @@ module Parser =
       let! name = fileName
       let! parentOpt = getUserState
       do! spaces >>. skipChar '{' .>> spaces
-      let dir = MockDirectory(name, parentOpt) :> IDirectory
+      let dir = MemoryDirectory(name, parentOpt) :> IDirectory
       do! setUserState (Some dir)
       let! (subfiles, subdirs) = fileList
       do! spaces >>. skipChar '}'
@@ -194,7 +194,7 @@ module Parser =
 
   let fileSystem =
     spaces >>. fileList .>> spaces .>> eof
-    |>> (fun (_, roots) -> MockFileSystem(roots))
+    |>> (fun (_, roots) -> MemoryFileSystem(roots))
 
   let parse name source =
     match runParserOnString fileSystem None name source with

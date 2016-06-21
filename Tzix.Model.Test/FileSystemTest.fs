@@ -1,4 +1,4 @@
-﻿namespace Tzix.Model.Test.MockFileSystem
+﻿namespace Tzix.Model.Test.MemoryFileSystem
 
 open System.IO
 open Persimmon
@@ -41,7 +41,7 @@ module TestData =
     let c = fsys.Roots |> Array.find (fun dir -> dir.Name = "C")
     let d = fsys.Roots |> Array.find (fun dir -> dir.Name = "D")
 
-module MockFileSystemTest =
+module MemoryFileSystemTest =
   open TestData
 
   let parseTest = test {
