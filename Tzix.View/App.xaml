@@ -1,9 +1,0 @@
-﻿<Application x:Class="Tzix.View.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:Tzix.View"
-             StartupUri="MainWindow.xaml">
-    <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
-    </Application.Resources>
-</Application>
