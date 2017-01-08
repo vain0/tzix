@@ -1,1 +1,1 @@
-..\packages\Persimmon.Console\tools\Persimmon.Console.exe bin\Debug\Tzix.ViewModel.Test.dll
+..\packages\Persimmon.Console\tools\Persimmon.Console.exe bin\Debug\VainZero.Tzix.Desktop.Core.UnitTest.dll

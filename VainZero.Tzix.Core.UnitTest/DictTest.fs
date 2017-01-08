@@ -72,7 +72,7 @@ module DictTest =
       |> Set.ofSeq
     parameterize {
       case (".git", set [])
-      case ("D", set ["D"; "Debug"])
+      case ("D", set ["D"; "Debug"; "VainZero.Tzix.Desktop"])
       case ("zix", set ["tzix"; "VainZero.Tzix.Core"; "VainZero.Tzix.Desktop"; "tzix.exe"])
       run (f |> Persimmon.functionResultEqualityTest)
     }

@@ -39,7 +39,7 @@ module SearcherTest =
   let searchAsyncTestComplex =
     runSearchTest (fun _ search ->
       search "Tzix" ["VainZero.Tzix.Core"; "VainZero.Tzix.Desktop"]
-      search "Tzix.M" ["VainZero.Tzix.Core"]
+      search "Tzix.C" ["VainZero.Tzix.Core"]
       search "Tzix." ["VainZero.Tzix.Core"; "VainZero.Tzix.Desktop"]
       )
 
