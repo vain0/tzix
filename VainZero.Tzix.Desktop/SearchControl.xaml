@@ -1,0 +1,59 @@
+﻿<Page
+    x:Name="_searchControl"
+    x:Class="VainZero.Tzix.Desktop.SearchControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:VainZero.Tzix.Desktop"
+    xmlns:util="clr-namespace:VainZero.Tzix.Desktop.Utilities"
+    mc:Ignorable="d" 
+    d:DesignWidth="320" d:DesignHeight="150"
+    >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <TextBox
+                x:Name="_searchBox"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                Height="20"
+                FontFamily="Myrica M,Consolas,Meiryo"
+                TextChanged="_searchBox_TextChanged"
+                >
+                <TextBox.InputBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                    <KeyBinding Gesture="Ctrl+Right" Command="{Binding BrowseDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseGrandparentDirCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
+        </Grid>
+        <Grid Grid.Row="1">
+            <util:LazyListBox
+                x:Name="_foundList"
+                LazyItemsSource="{Binding ItemChunks}"
+                SelectedIndex="{Binding SelectedIndex}"
+                MaxHeight="300"
+                FocusManager.GotFocus="_foundList_GotFocus"
+                >
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <TextBlock Text="{Binding ShortName}" />
+                            <Grid.InputBindings>
+                                <MouseBinding Gesture="LeftDoubleClick" Command="{Binding CommitCommand}" />
+                            </Grid.InputBindings>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.InputBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding CommitCommand}" />
+                    <KeyBinding Gesture="Ctrl+Right" Command="{Binding BrowseDirCommand}" />
+                    <KeyBinding Gesture="Ctrl+Left" Command="{Binding BrowseGrandparentDirCommand}" />
+                </ListBox.InputBindings>
+            </util:LazyListBox>
+        </Grid>
+    </Grid>
+</Page>
